@@ -1,0 +1,14 @@
+.next
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env*
+deploy.tar.gz
+deploy.ps1
+deploy.sh
+.playwright-mcp
+.kiro
+*.md
+docs/
