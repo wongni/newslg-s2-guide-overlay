@@ -114,6 +114,175 @@ function formatDays(h: number): string {
   return `${days.toFixed(1)}일 (${formatHours(h)})`;
 }
 
+// --- 업그레이드 추천 컴포넌트 ---
+function UpgradeRecommendation({
+  level1,
+  level2,
+  data,
+  dunjeonPerHarvest,
+}: {
+  level1: number;
+  level2: number;
+  data: LevelRow[];
+  dunjeonPerHarvest: number;
+}) {
+  const recommendation = useMemo(() => {
+    const DUNJEON_THRESHOLD = 20;
+
+    // 다음 레벨업의 ROI 비교
+    const getNextUpgradeRoi = (currentLevel: number) => {
+      if (currentLevel >= MAX_LEVEL) return Infinity;
+      const row = data[currentLevel - 1]; // fromLevel = currentLevel
+      if (!row) return Infinity;
+      const dailyGain = row.productionGain * HOURS_PER_DAY;
+      return (row.cost * 2) / dailyGain;
+    };
+
+    // 20레벨까지 남은 비용 계산
+    const getCostToLevel = (from: number, to: number) => {
+      return data
+        .filter((d) => d.fromLevel >= from && d.fromLevel < to)
+        .reduce((sum, d) => sum + d.cost, 0);
+    };
+
+    // 20까지 남은 생산량 증가 합산
+    const getProductionToLevel = (from: number, to: number) => {
+      return data
+        .filter((d) => d.fromLevel >= from && d.fromLevel < to)
+        .reduce((sum, d) => sum + d.productionGain, 0);
+    };
+
+    const roi1 = getNextUpgradeRoi(level1);
+    const roi2 = getNextUpgradeRoi(level2);
+
+    const higher = Math.max(level1, level2);
+    const lower = Math.min(level1, level2);
+    const higherIs1 = level1 >= level2;
+
+    // Case 1: 둘 다 20 이상 → 단순 ROI 비교
+    if (level1 >= DUNJEON_THRESHOLD && level2 >= DUNJEON_THRESHOLD) {
+      const better = roi1 <= roi2 ? "1동" : "2동";
+      const betterRoi = Math.min(roi1, roi2);
+      return {
+        strategy: "lower_roi",
+        title: `${better} 우선 업그레이드`,
+        reason: `${better}의 다음 레벨 ROI(${betterRoi.toFixed(1)}일)가 더 효율적입니다.`,
+        detail: `1동 다음 ROI: ${roi1.toFixed(1)}일 / 2동 다음 ROI: ${roi2.toFixed(1)}일`,
+      };
+    }
+
+    // Case 2: 한쪽이 20 미만이고 높은 쪽이 10 이상 → 높은 쪽 20 집중 권장 여부
+    if (higher >= 10 && higher < DUNJEON_THRESHOLD) {
+      // 높은 쪽을 20까지 밀기 vs 낮은 쪽 올리기 비교
+      const costToMax = getCostToLevel(higher, DUNJEON_THRESHOLD);
+      const prodToMax = getProductionToLevel(higher, DUNJEON_THRESHOLD);
+      const daysToMax = (costToMax * 2) / (prodToMax * HOURS_PER_DAY); // 대략적 ROI
+
+      // 둔전 보너스 가치: 하루 기준
+      const dunjeonDailyValue = dunjeonPerHarvest * DUNJEON_BONUS_PER_BUILDING * DUNJEON_PER_DAY;
+
+      // 낮은 쪽에 같은 비용을 넣었을 때 생산량
+      const prodIfLower = getProductionToLevel(lower, Math.min(lower + (DUNJEON_THRESHOLD - higher), MAX_LEVEL));
+      const dailyIfLower = prodIfLower * HOURS_PER_DAY;
+
+      // 높은 쪽 20 밀기의 실효 가치 = 생산량 + 둔전 보너스
+      const dailyIfHigher = prodToMax * HOURS_PER_DAY + dunjeonDailyValue;
+
+      if (dailyIfHigher > dailyIfLower) {
+        const which = higherIs1 ? "1동" : "2동";
+        return {
+          strategy: "rush_20",
+          title: `🏆 ${which} → 20레벨 집중 추천`,
+          reason: `${which}을 20까지 밀면 둔전 보너스(+${Math.round(dunjeonDailyValue).toLocaleString()}/일)를 빨리 확보할 수 있습니다.`,
+          detail: `${which} 20 집중: 실효 +${Math.round(dailyIfHigher).toLocaleString()}/일 vs 낮은 쪽 균등: +${Math.round(dailyIfLower).toLocaleString()}/일`,
+        };
+      }
+    }
+
+    // Case 3: 둘 다 낮음 → 낮은 쪽 우선 (저렙 ROI가 좋음)
+    if (higher < 10) {
+      if (level1 === level2) {
+        return {
+          strategy: "equal",
+          title: "번갈아 균등 업그레이드",
+          reason: "두 건물 레벨이 같으므로 번갈아 올리는 것이 효율적입니다.",
+          detail: `다음 레벨 ROI: ${roi1.toFixed(1)}일 (동일)`,
+        };
+      }
+      const lowerName = level1 <= level2 ? "1동" : "2동";
+      const lowerRoi = Math.min(roi1, roi2);
+      return {
+        strategy: "lower_first",
+        title: `${lowerName} 우선 (낮은 쪽 먼저)`,
+        reason: `저레벨 업그레이드가 ROI(${lowerRoi.toFixed(1)}일)가 더 좋습니다. 낮은 쪽을 먼저 올리세요.`,
+        detail: `1동(Lv${level1}) ROI: ${roi1.toFixed(1)}일 / 2동(Lv${level2}) ROI: ${roi2.toFixed(1)}일`,
+      };
+    }
+
+    // Case 4: 한쪽 10+, 다른 쪽 낮음 → 상황에 따라
+    if (lower < 10 && higher >= 10) {
+      // 낮은 쪽 ROI가 훨씬 좋으면 낮은 쪽
+      if (roi2 < roi1 * 0.7 || roi1 < roi2 * 0.7) {
+        const better = roi1 <= roi2 ? "1동" : "2동";
+        return {
+          strategy: "lower_roi",
+          title: `${better} 우선 (ROI 효율)`,
+          reason: `${better}의 다음 레벨 ROI가 훨씬 효율적입니다.`,
+          detail: `1동(Lv${level1}) ROI: ${roi1.toFixed(1)}일 / 2동(Lv${level2}) ROI: ${roi2.toFixed(1)}일`,
+        };
+      }
+
+      // 둔전 보너스 고려
+      const dunjeonDailyValue = dunjeonPerHarvest * DUNJEON_BONUS_PER_BUILDING * DUNJEON_PER_DAY;
+      if (dunjeonDailyValue > 0 && higher >= 15) {
+        const which = higherIs1 ? "1동" : "2동";
+        return {
+          strategy: "rush_20",
+          title: `🏆 ${which} → 20레벨 집중 추천`,
+          reason: `${which}이 15+이므로 20까지 밀어서 둔전 보너스를 먼저 확보하세요.`,
+          detail: `둔전 보너스 확보 시: +${Math.round(dunjeonDailyValue).toLocaleString()}/일`,
+        };
+      }
+
+      const lowerName = level1 <= level2 ? "1동" : "2동";
+      return {
+        strategy: "lower_first",
+        title: `${lowerName} 우선 (낮은 쪽 ROI 우수)`,
+        reason: "저레벨 업그레이드의 투자 효율이 더 높습니다.",
+        detail: `1동(Lv${level1}) ROI: ${roi1.toFixed(1)}일 / 2동(Lv${level2}) ROI: ${roi2.toFixed(1)}일`,
+      };
+    }
+
+    // 기본: ROI 낮은 쪽
+    const better = roi1 <= roi2 ? "1동" : "2동";
+    return {
+      strategy: "lower_roi",
+      title: `${better} 우선 업그레이드`,
+      reason: `다음 레벨 ROI 기준으로 ${better}이 더 효율적입니다.`,
+      detail: `1동(Lv${level1}) ROI: ${roi1.toFixed(1)}일 / 2동(Lv${level2}) ROI: ${roi2.toFixed(1)}일`,
+    };
+  }, [level1, level2, data, dunjeonPerHarvest]);
+
+  return (
+    <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+      <h2 className="text-sm font-bold text-green-800 dark:text-green-300 mb-2">
+        💡 업그레이드 추천
+      </h2>
+      <div className="space-y-1">
+        <div className="text-sm font-bold text-green-700 dark:text-green-400">
+          {recommendation.title}
+        </div>
+        <div className="text-xs text-zinc-600 dark:text-zinc-400">
+          {recommendation.reason}
+        </div>
+        <div className="text-[11px] text-zinc-500 dark:text-zinc-500 mt-1 pt-1 border-t border-green-200 dark:border-green-800">
+          {recommendation.detail}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RoiCalculatorPage() {
   const [data, setData] = useState<LevelRow[]>(createDefaultData);
   const [buildingCount, setBuildingCount] = useState(1);
@@ -424,6 +593,16 @@ export default function RoiCalculatorPage() {
             )}
           </div>
         </div>
+
+        {/* 업그레이드 추천 */}
+        {buildingCount === 2 && (
+          <UpgradeRecommendation
+            level1={currentLevel1}
+            level2={currentLevel2}
+            data={data}
+            dunjeonPerHarvest={parseFloat(currentDunjeon) || 0}
+          />
+        )}
 
         {/* 편집 가능한 레벨별 테이블 */}
         <div>
