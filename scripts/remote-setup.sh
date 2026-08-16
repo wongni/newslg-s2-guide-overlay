@@ -1,51 +1,13 @@
 #!/bin/bash
-# deploy.sh - Idempotent deploy of Next.js app to a fresh or existing Linux server
-# Usage: ./deploy.sh [HOST] [USER] [DOMAIN]
-#
-# Prerequisites (local): ssh, scp, tar
-# Target: Any Ubuntu/Debian Linux server with SSH access
-
+# remote-setup.sh - Idempotent server setup and deploy
+# This script is uploaded and executed by deploy.ps1
+# Args: $1=CONTAINER $2=IMAGE $3=PORT $4=DOMAIN
 set -e
 
-# --- Config ---
-REMOTE_HOST="${1:-216.45.63.224}"
-REMOTE_USER="${2:-root}"
-DOMAIN="${3:-sam.wongni.xyz}"
-PORT=80
-CONTAINER="s2-guide-overlay"
-IMAGE="s2-guide-overlay"
-REMOTE="${REMOTE_USER}@${REMOTE_HOST}"
-
-# ============================================================
-# 1. Create source archive
-# ============================================================
-echo ""
-echo "[1/4] Creating source archive..."
-tar -czf deploy.tar.gz \
-  --exclude=node_modules \
-  --exclude=.next \
-  --exclude=.git \
-  --exclude=deploy.tar.gz \
-  .
-
-# ============================================================
-# 2. Upload to server
-# ============================================================
-echo "[2/4] Uploading to ${REMOTE}..."
-scp deploy.tar.gz "${REMOTE}:~/"
-
-# ============================================================
-# 3. Remote setup (idempotent)
-# ============================================================
-echo "[3/4] Setting up server and deploying..."
-
-ssh "${REMOTE}" bash -s "$CONTAINER" "$IMAGE" "$PORT" "$DOMAIN" << 'REMOTE_SCRIPT'
-set -e
-
-CONTAINER="$1"
-IMAGE="$2"
-PORT="$3"
-DOMAIN="$4"
+CONTAINER="${1:-s2-guide-overlay}"
+IMAGE="${2:-s2-guide-overlay}"
+PORT="${3:-80}"
+DOMAIN="${4:-sam.wongni.xyz}"
 
 echo '>>> [1/5] Installing Docker if needed...'
 if ! command -v docker &> /dev/null; then
@@ -54,7 +16,7 @@ if ! command -v docker &> /dev/null; then
   install -m 0755 -d /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg 2>/dev/null || true
   chmod a+r /etc/apt/keyrings/docker.gpg
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" > /etc/apt/sources.list.d/docker.list
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
   apt-get update -qq
   apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin
   systemctl enable docker
@@ -147,15 +109,3 @@ else
   docker logs "$CONTAINER" --tail 20
   exit 1
 fi
-REMOTE_SCRIPT
-
-# ============================================================
-# 4. Cleanup local
-# ============================================================
-echo "[4/4] Cleaning up..."
-rm -f deploy.tar.gz
-
-echo ""
-echo "Deploy complete!"
-echo "  URL: https://${DOMAIN}"
-echo "  Direct IP access is blocked."

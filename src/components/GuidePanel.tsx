@@ -20,8 +20,13 @@ interface GuidePanelProps {
 
 export function GuidePanel({ compact = false, extraActions }: GuidePanelProps) {
   const { tier, setTier } = useTier();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const steps = useMemo(() => resolveSteps(rawSteps, tier), [tier]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { completed, toggle, reset, progressCount, progressPercent, currentStepId } =
     useProgress(steps.length);
@@ -48,7 +53,9 @@ export function GuidePanel({ compact = false, extraActions }: GuidePanelProps) {
 
   const allExpanded = expandedIds.size === steps.length;
 
-  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+  const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
+
+  const themeIcon = mounted ? (resolvedTheme === "dark" ? "☀️" : "🌙") : "🌙";
 
   // Auto-scroll to current step (compact/PiP mode only)
   useEffect(() => {
@@ -79,9 +86,9 @@ export function GuidePanel({ compact = false, extraActions }: GuidePanelProps) {
                 className={`rounded transition-colors bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
                   compact ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-2 text-sm"
                 }`}
-                title={theme === "dark" ? "라이트 모드" : "다크 모드"}
+                title={mounted && resolvedTheme === "dark" ? "라이트 모드" : "다크 모드"}
               >
-                {theme === "dark" ? "☀️" : "🌙"}
+                {themeIcon}
               </button>
               <button
                 onClick={allExpanded ? collapseAll : expandAll}

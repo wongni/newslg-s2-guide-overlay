@@ -1,33 +1,51 @@
-# deploy.ps1 - Deploy Next.js app via Docker
-# Usage: .\deploy.ps1
+# deploy.ps1 - Idempotent deploy of Next.js app to a fresh or existing Linux server
+# Usage: .\deploy.ps1 [-Server <ip>] [-User <user>] [-Domain <subdomain.domain.tld>]
+#
+# Prerequisites (local): ssh, scp, tar available in PATH
+# Target: Any Ubuntu/Debian Linux server with SSH access (Docker will be installed if missing)
+
+param(
+    [string]$Server = "216.45.63.224",
+    [string]$User = "root",
+    [string]$Domain = "sam.wongni.xyz",
+    [int]$Port = 80
+)
 
 $ErrorActionPreference = "Stop"
+$REMOTE = "${User}@${Server}"
+$CONTAINER = "s2-guide-overlay"
+$IMAGE = "s2-guide-overlay"
 
-# --- Config ---
-$REMOTE_HOST = "216.45.63.224"
-$REMOTE_USER = "root"
-$APP_PORT = 3000
+# ============================================================
+# 1. Create source archive
+# ============================================================
+Write-Host "`n[1/4] Creating source archive..." -ForegroundColor Cyan
+tar -czf deploy.tar.gz --exclude=node_modules --exclude=.next --exclude=.git --exclude=deploy.tar.gz .
 
-# --- Create Archive (source code) ---
-Write-Host "[1/3] Creating source archive..." -ForegroundColor Cyan
-$exclude = @("node_modules", ".next", ".git", "deploy.tar.gz")
-tar -czf deploy.tar.gz --exclude=node_modules --exclude=.next --exclude=.git .
-
-# --- Upload to Server ---
-Write-Host "[2/3] Uploading to server..." -ForegroundColor Cyan
-scp deploy.tar.gz "${REMOTE_USER}@${REMOTE_HOST}:~/"
+# ============================================================
+# 2. Upload to server
+# ============================================================
+Write-Host "[2/4] Uploading to ${REMOTE}..." -ForegroundColor Cyan
+scp deploy.tar.gz "${REMOTE}:~/"
 if ($LASTEXITCODE -ne 0) { throw "Upload failed" }
 
-# --- Remote Docker Build & Run ---
-Write-Host "[3/3] Building and starting Docker container..." -ForegroundColor Cyan
-$remoteScript = "rm -rf ~/s2-guide-overlay && mkdir -p ~/s2-guide-overlay && cd ~/s2-guide-overlay && tar -xzf ~/deploy.tar.gz && rm ~/deploy.tar.gz && docker stop s2-guide-overlay 2>/dev/null || true && docker rm s2-guide-overlay 2>/dev/null || true && docker build -t s2-guide-overlay . && docker run -d --name s2-guide-overlay --restart unless-stopped -p ${APP_PORT}:3000 s2-guide-overlay && echo 'Deploy complete!'"
+scp scripts/remote-setup.sh "${REMOTE}:~/remote-setup.sh"
+if ($LASTEXITCODE -ne 0) { throw "Script upload failed" }
 
-ssh "${REMOTE_USER}@${REMOTE_HOST}" $remoteScript
+# ============================================================
+# 3. Execute remote setup
+# ============================================================
+Write-Host "[3/4] Setting up server and deploying..." -ForegroundColor Cyan
+ssh $REMOTE "chmod +x ~/remote-setup.sh && bash ~/remote-setup.sh '$CONTAINER' '$IMAGE' '$Port' '$Domain' && rm -f ~/remote-setup.sh"
 if ($LASTEXITCODE -ne 0) { throw "Remote deploy failed" }
 
-# --- Cleanup ---
+# ============================================================
+# 4. Cleanup local
+# ============================================================
+Write-Host "[4/4] Cleaning up..." -ForegroundColor Cyan
 Remove-Item -Force deploy.tar.gz -ErrorAction SilentlyContinue
 
 Write-Host ""
 Write-Host "Deploy complete!" -ForegroundColor Green
-Write-Host "  http://${REMOTE_HOST}:${APP_PORT}" -ForegroundColor Yellow
+Write-Host "  URL: https://${Domain}" -ForegroundColor Yellow
+Write-Host "  Direct IP access is blocked." -ForegroundColor DarkGray
