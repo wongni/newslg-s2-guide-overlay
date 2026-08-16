@@ -111,8 +111,10 @@ function formatDays(h: number): string {
 export default function RoiCalculatorPage() {
   const [data, setData] = useState<LevelRow[]>(createDefaultData);
   const [buildingCount, setBuildingCount] = useState(1);
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [targetLevel, setTargetLevel] = useState(MAX_LEVEL);
+  const [currentLevel1, setCurrentLevel1] = useState(1);
+  const [targetLevel1, setTargetLevel1] = useState(MAX_LEVEL);
+  const [currentLevel2, setCurrentLevel2] = useState(1);
+  const [targetLevel2, setTargetLevel2] = useState(MAX_LEVEL);
   const [currentDunjeon, setCurrentDunjeon] = useState("");
   const [editingCell, setEditingCell] = useState<{ row: number; field: "cost" | "productionGain" } | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -150,40 +152,53 @@ export default function RoiCalculatorPage() {
 
   // 계산
   const analysis = useMemo(() => {
-    const rows = data.filter(
-      (d) => d.fromLevel >= currentLevel && d.fromLevel < targetLevel
+    // 건물 1 계산
+    const rows1 = data.filter(
+      (d) => d.fromLevel >= currentLevel1 && d.fromLevel < targetLevel1
     );
-
-    let cumulativeCost = 0;
-    let cumulativeProduction = BASE_PRODUCTION; // 1레벨 기본 생산량 포함
-
-    const detailed = rows.map((row) => {
-      cumulativeCost += row.cost;
-      cumulativeProduction += row.productionGain;
-      // ROI for this level: cost(both resources) / daily gain from this level
+    let cumCost1 = 0;
+    let cumProd1 = BASE_PRODUCTION;
+    const detailed1 = rows1.map((row) => {
+      cumCost1 += row.cost;
+      cumProd1 += row.productionGain;
       const dailyGainThisLevel = row.productionGain * HOURS_PER_DAY;
       const levelRoi = (row.cost * 2) / dailyGainThisLevel;
-      return {
-        ...row,
-        cumulativeCost,
-        cumulativeProduction,
-        levelRoi,
-      };
+      return { ...row, cumulativeCost: cumCost1, cumulativeProduction: cumProd1, levelRoi };
     });
+    const totalCost1 = cumCost1;
+    const totalProd1 = rows1.reduce((sum, r) => sum + r.productionGain, 0);
 
-    const totalCostPerResource = cumulativeCost;
-    const totalCostBoth = totalCostPerResource * 2;
-    const totalProduction = cumulativeProduction;
-    const totalCostAllBuildings = totalCostPerResource * buildingCount;
-    const totalProductionAll = totalProduction * buildingCount;
+    // 건물 2 계산 (2동일 때만)
+    let totalCost2 = 0;
+    let totalProd2 = 0;
+    let detailed2: typeof detailed1 = [];
+    if (buildingCount === 2) {
+      const rows2 = data.filter(
+        (d) => d.fromLevel >= currentLevel2 && d.fromLevel < targetLevel2
+      );
+      let cumCost2 = 0;
+      let cumProd2 = BASE_PRODUCTION;
+      detailed2 = rows2.map((row) => {
+        cumCost2 += row.cost;
+        cumProd2 += row.productionGain;
+        const dailyGainThisLevel = row.productionGain * HOURS_PER_DAY;
+        const levelRoi = (row.cost * 2) / dailyGainThisLevel;
+        return { ...row, cumulativeCost: cumCost2, cumulativeProduction: cumProd2, levelRoi };
+      });
+      totalCost2 = cumCost2;
+      totalProd2 = rows2.reduce((sum, r) => sum + r.productionGain, 0);
+    }
 
-    // 하루 추가 생산량 = 시간당 증가 × 24시간 × 건물 수
+    const totalCostAllBuildings = totalCost1 + totalCost2;
+    const totalProductionAll = totalProd1 + totalProd2;
+
+    // 하루 추가 생산량 = 시간당 증가 × 24시간
     const dailyGainAll = totalProductionAll * HOURS_PER_DAY;
 
     // 둔전 보너스 (20레벨 달성 시 둔전 수확량 +25%/동, 하루 5회)
     const baseDunjeonPerHarvest = parseFloat(currentDunjeon) || 0;
-    const dunjeonBonusPerHarvest =
-      targetLevel === MAX_LEVEL ? baseDunjeonPerHarvest * DUNJEON_BONUS_PER_BUILDING * buildingCount : 0;
+    const maxedBuildings = (targetLevel1 === MAX_LEVEL ? 1 : 0) + (buildingCount === 2 && targetLevel2 === MAX_LEVEL ? 1 : 0);
+    const dunjeonBonusPerHarvest = baseDunjeonPerHarvest * DUNJEON_BONUS_PER_BUILDING * maxedBuildings;
     const dailyDunjeonBonus = dunjeonBonusPerHarvest * DUNJEON_PER_DAY;
 
     const totalDailyGainWithBonus = dailyGainAll + dailyDunjeonBonus;
@@ -192,10 +207,8 @@ export default function RoiCalculatorPage() {
     const overallRoiDays = totalDailyGainWithBonus > 0 ? (totalCostAllBuildings * 2) / totalDailyGainWithBonus : Infinity;
 
     return {
-      detailed,
-      totalCostPerResource,
-      totalCostBoth,
-      totalProduction,
+      detailed1,
+      detailed2,
       totalCostAllBuildings,
       totalProductionAll,
       dailyGainAll,
@@ -203,9 +216,9 @@ export default function RoiCalculatorPage() {
       dailyDunjeonBonus,
       totalDailyGainWithBonus,
       overallRoiDays,
-      levelsCount: rows.length,
+      maxedBuildings,
     };
-  }, [data, currentLevel, targetLevel, buildingCount, currentDunjeon]);
+  }, [data, currentLevel1, targetLevel1, currentLevel2, targetLevel2, buildingCount, currentDunjeon]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
@@ -234,72 +247,123 @@ export default function RoiCalculatorPage() {
         {/* 설정 */}
         <div className="p-4 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-4">
           <h2 className="text-sm font-bold">설정</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div>
-              <label className="text-xs text-zinc-500 dark:text-zinc-400">현재 레벨</label>
-              <select
-                value={currentLevel}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  setCurrentLevel(v);
-                  if (v >= targetLevel) setTargetLevel(Math.min(v + 1, MAX_LEVEL));
-                }}
-                className="w-full mt-1 px-2 py-1.5 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"
-              >
-                {Array.from({ length: MAX_LEVEL - 1 }, (_, i) => i + 1).map((lv) => (
-                  <option key={lv} value={lv}>{lv}</option>
-                ))}
-              </select>
+
+          {/* 건물 수 */}
+          <div className="flex items-center gap-3">
+            <label className="text-xs text-zinc-500 dark:text-zinc-400">건물 수</label>
+            <div className="flex gap-2">
+              {[1, 2].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setBuildingCount(n)}
+                  className={`px-4 py-1.5 rounded text-sm font-bold transition-colors ${
+                    buildingCount === n
+                      ? "bg-amber-600 text-white"
+                      : "bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                  }`}
+                >
+                  {n}동
+                </button>
+              ))}
             </div>
-            <div>
-              <label className="text-xs text-zinc-500 dark:text-zinc-400">목표 레벨</label>
-              <select
-                value={targetLevel}
-                onChange={(e) => setTargetLevel(Number(e.target.value))}
-                className="w-full mt-1 px-2 py-1.5 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"
-              >
-                {Array.from({ length: MAX_LEVEL - currentLevel }, (_, i) => currentLevel + 1 + i).map((lv) => (
-                  <option key={lv} value={lv}>{lv}{lv === MAX_LEVEL ? " (최대)" : ""}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-zinc-500 dark:text-zinc-400">건물 수</label>
-              <div className="flex gap-2 mt-1">
-                {[1, 2].map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setBuildingCount(n)}
-                    className={`flex-1 py-1.5 rounded text-sm font-bold transition-colors ${
-                      buildingCount === n
-                        ? "bg-amber-600 text-white"
-                        : "bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
-                    }`}
+          </div>
+
+          {/* 건물별 레벨 설정 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* 1동 */}
+            <div className="p-3 rounded border border-zinc-200 dark:border-zinc-700 space-y-2">
+              <div className="text-xs font-bold text-zinc-500 dark:text-zinc-400">1동</div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-zinc-400">현재</label>
+                  <select
+                    value={currentLevel1}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setCurrentLevel1(v);
+                      if (v >= targetLevel1) setTargetLevel1(Math.min(v + 1, MAX_LEVEL));
+                    }}
+                    className="w-full mt-0.5 px-2 py-1 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"
                   >
-                    {n}동
-                  </button>
-                ))}
+                    {Array.from({ length: MAX_LEVEL - 1 }, (_, i) => i + 1).map((lv) => (
+                      <option key={lv} value={lv}>{lv}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-zinc-400">목표</label>
+                  <select
+                    value={targetLevel1}
+                    onChange={(e) => setTargetLevel1(Number(e.target.value))}
+                    className="w-full mt-0.5 px-2 py-1 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"
+                  >
+                    {Array.from({ length: MAX_LEVEL - currentLevel1 }, (_, i) => currentLevel1 + 1 + i).map((lv) => (
+                      <option key={lv} value={lv}>{lv}{lv === MAX_LEVEL ? " (최대)" : ""}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-            <div>
-              <label className="text-xs text-zinc-500 dark:text-zinc-400">
-                현재 둔전 1회 수확량
-              </label>
-              <input
-                type="number"
-                placeholder="예: 5000"
-                value={currentDunjeon}
-                onChange={(e) => setCurrentDunjeon(e.target.value)}
-                className="w-full mt-1 px-2 py-1.5 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"
-              />
-            </div>
+
+            {/* 2동 */}
+            {buildingCount === 2 && (
+              <div className="p-3 rounded border border-zinc-200 dark:border-zinc-700 space-y-2">
+                <div className="text-xs font-bold text-zinc-500 dark:text-zinc-400">2동</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-zinc-400">현재</label>
+                    <select
+                      value={currentLevel2}
+                      onChange={(e) => {
+                        const v = Number(e.target.value);
+                        setCurrentLevel2(v);
+                        if (v >= targetLevel2) setTargetLevel2(Math.min(v + 1, MAX_LEVEL));
+                      }}
+                      className="w-full mt-0.5 px-2 py-1 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"
+                    >
+                      {Array.from({ length: MAX_LEVEL - 1 }, (_, i) => i + 1).map((lv) => (
+                        <option key={lv} value={lv}>{lv}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-zinc-400">목표</label>
+                    <select
+                      value={targetLevel2}
+                      onChange={(e) => setTargetLevel2(Number(e.target.value))}
+                      className="w-full mt-0.5 px-2 py-1 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"
+                    >
+                      {Array.from({ length: MAX_LEVEL - currentLevel2 }, (_, i) => currentLevel2 + 1 + i).map((lv) => (
+                        <option key={lv} value={lv}>{lv}{lv === MAX_LEVEL ? " (최대)" : ""}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 둔전 */}
+          <div className="max-w-[200px]">
+            <label className="text-xs text-zinc-500 dark:text-zinc-400">
+              현재 둔전 1회 수확량
+            </label>
+            <input
+              type="number"
+              placeholder="예: 5000"
+              value={currentDunjeon}
+              onChange={(e) => setCurrentDunjeon(e.target.value)}
+              className="w-full mt-1 px-2 py-1.5 text-sm rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"
+            />
           </div>
         </div>
 
         {/* 결과 요약 */}
         <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 space-y-3">
           <h2 className="text-sm font-bold text-amber-800 dark:text-amber-300">
-            📊 {currentLevel}레벨 → {targetLevel}레벨 (×{buildingCount}동)
+            📊 {buildingCount === 1
+              ? `${currentLevel1}→${targetLevel1}레벨 (1동)`
+              : `1동: ${currentLevel1}→${targetLevel1} / 2동: ${currentLevel2}→${targetLevel2}`}
           </h2>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
             <div className="text-zinc-600 dark:text-zinc-400">총 비용 (목재)</div>
@@ -327,7 +391,7 @@ export default function RoiCalculatorPage() {
 
             {analysis.dailyDunjeonBonus > 0 && (
               <>
-                <div className="text-zinc-600 dark:text-zinc-400">둔전 보너스 (+{buildingCount * 25}%, 5회/일)</div>
+                <div className="text-zinc-600 dark:text-zinc-400">둔전 보너스 (+{analysis.maxedBuildings * 25}%, 5회/일)</div>
                 <div className="font-bold text-right text-blue-600 dark:text-blue-400">
                   +{Math.round(analysis.dailyDunjeonBonus).toLocaleString()}/일
                 </div>
@@ -346,7 +410,7 @@ export default function RoiCalculatorPage() {
         {/* 편집 가능한 레벨별 테이블 */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-bold">레벨별 상세 (클릭하여 수정)</h2>
+            <h2 className="text-sm font-bold">{buildingCount === 2 ? "1동 " : ""}레벨별 상세 (클릭하여 수정)</h2>
             <span className="text-[10px] text-zinc-400">
               ⚡ 확인됨 / 📐 추정값 — 셀 클릭으로 실제 값 입력
             </span>
@@ -363,7 +427,7 @@ export default function RoiCalculatorPage() {
                 </tr>
               </thead>
               <tbody>
-                {analysis.detailed.map((row, idx) => {
+                {analysis.detailed1.map((row) => {
                   const dataIdx = row.fromLevel - 1;
                   const isEditing = editingCell?.row === dataIdx;
 
