@@ -285,7 +285,7 @@ function UpgradeRecommendation({
 
 export default function RoiCalculatorPage() {
   const [data, setData] = useState<LevelRow[]>(createDefaultData);
-  const [buildingCount, setBuildingCount] = useState(1);
+  const [buildingCount] = useState(2);
   const [currentLevel1, setCurrentLevel1] = useState(1);
   const [targetLevel1, setTargetLevel1] = useState(MAX_LEVEL);
   const [currentLevel2, setCurrentLevel2] = useState(1);
@@ -426,26 +426,6 @@ export default function RoiCalculatorPage() {
         <div className="p-4 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-4">
           <h2 className="text-sm font-bold">설정</h2>
 
-          {/* 건물 수 */}
-          <div className="flex items-center gap-3">
-            <label className="text-xs text-zinc-500 dark:text-zinc-400">건물 수</label>
-            <div className="flex gap-2">
-              {[1, 2].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => setBuildingCount(n)}
-                  className={`px-4 py-1.5 rounded text-sm font-bold transition-colors ${
-                    buildingCount === n
-                      ? "bg-amber-600 text-white"
-                      : "bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
-                  }`}
-                >
-                  {n}동
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* 건물별 레벨 설정 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* 1동 */}
@@ -484,8 +464,7 @@ export default function RoiCalculatorPage() {
             </div>
 
             {/* 2동 */}
-            {buildingCount === 2 && (
-              <div className="p-3 rounded border border-zinc-200 dark:border-zinc-700 space-y-2">
+            <div className="p-3 rounded border border-zinc-200 dark:border-zinc-700 space-y-2">
                 <div className="text-xs font-bold text-zinc-500 dark:text-zinc-400">2동</div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -518,7 +497,6 @@ export default function RoiCalculatorPage() {
                   </div>
                 </div>
               </div>
-            )}
           </div>
 
           {/* 둔전 */}
@@ -595,19 +573,17 @@ export default function RoiCalculatorPage() {
         </div>
 
         {/* 업그레이드 추천 */}
-        {buildingCount === 2 && (
-          <UpgradeRecommendation
-            level1={currentLevel1}
-            level2={currentLevel2}
-            data={data}
-            dunjeonPerHarvest={parseFloat(currentDunjeon) || 0}
-          />
-        )}
+        <UpgradeRecommendation
+          level1={currentLevel1}
+          level2={currentLevel2}
+          data={data}
+          dunjeonPerHarvest={parseFloat(currentDunjeon) || 0}
+        />
 
         {/* 편집 가능한 레벨별 테이블 */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-bold">{buildingCount === 2 ? "1동 " : ""}레벨별 상세 (클릭하여 수정)</h2>
+            <h2 className="text-sm font-bold">1동 레벨별 상세 (클릭하여 수정)</h2>
             <span className="text-[10px] text-zinc-400">
               ⚡ 확인됨 / 📐 추정값 — 셀 클릭으로 실제 값 입력
             </span>
