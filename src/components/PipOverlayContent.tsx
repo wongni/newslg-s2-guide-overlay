@@ -3,6 +3,7 @@
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { GuidePanel } from "@/components/GuidePanel";
+import { SupportButton } from "@/components/monetization";
 
 interface PipOverlayContentProps {
   pipWindow: Window;
@@ -61,5 +62,13 @@ export function PipOverlayContent({ pipWindow }: PipOverlayContentProps) {
 
   if (!container) return null;
 
-  return createPortal(<GuidePanel compact />, container);
+  return createPortal(
+    <>
+      <GuidePanel compact />
+      <div className="flex justify-center py-3 border-t border-zinc-700">
+        <SupportButton compact />
+      </div>
+    </>,
+    container
+  );
 }
