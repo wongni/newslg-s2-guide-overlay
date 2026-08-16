@@ -3,6 +3,7 @@
 import { usePictureInPicture } from "@/hooks/usePictureInPicture";
 import { GuidePanel } from "@/components/GuidePanel";
 import { PipOverlayContent } from "@/components/PipOverlayContent";
+import { References } from "@/components/References";
 import Link from "next/link";
 
 export default function Home() {
@@ -50,6 +51,7 @@ export default function Home() {
   return (
     <>
       <GuidePanel extraActions={extraActions} />
+      <References />
       {isPipOpen && pipWindow && <PipOverlayContent pipWindow={pipWindow} />}
     </>
   );
