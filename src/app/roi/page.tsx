@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 
 // --- 상수 ---
-const MAX_LEVEL = 20;
+const MAX_LEVEL = 25;
 const MAX_BUILDINGS = 2;
 const DUNJEON_BONUS_PER_BUILDING = 0.25;
 const DUNJEON_PER_DAY = 5; // 둔전 하루 5회 충전
@@ -15,12 +15,14 @@ const HOURS_PER_DAY = 24;
 // 도달 레벨 6~10: +400/레벨 (fromLevel 5~9)
 // 도달 레벨 11~15: +600/레벨 (fromLevel 10~14)
 // 도달 레벨 16~20: +800/레벨 (fromLevel 15~19) (추정)
+// 도달 레벨 21~25: +1000/레벨 (fromLevel 20~24) (추정)
 function defaultProductionGain(fromLevel: number): number {
   const targetLevel = fromLevel + 1;
   if (targetLevel <= 5) return 200;
   if (targetLevel <= 10) return 400;
   if (targetLevel <= 15) return 600;
-  return 800;
+  if (targetLevel <= 20) return 800;
+  return 1000;
 }
 
 // 비용 패턴 (확인된 값 + 추정):
@@ -53,9 +55,13 @@ function defaultUpgradeCost(fromLevel: number): number {
     // 5→6~9→10 마지막: 17000 + 4*5500 = 39000
     // 10→11 시작: 44500 추정, d: (61000-44500)/3 = 5500
     return 44500 + (fromLevel - 10) * 5500;
-  } else {
+  } else if (fromLevel <= 19) {
     // 15→16 시작 추정: 44500 + 5*5500 = 72000, 증가폭 8000 추정
     return 72000 + (fromLevel - 15) * 8000;
+  } else {
+    // 20→21 시작 추정: 72000 + 5*8000 = 112000
+    // 고레벨은 비용 급증 → 증가폭 15000 추정
+    return 130000 + (fromLevel - 20) * 15000;
   }
 }
 
@@ -197,14 +203,16 @@ export default function RoiCalculatorPage() {
 
     // 둔전 보너스 (20레벨 달성 시 둔전 수확량 +25%/동, 하루 5회)
     const baseDunjeonPerHarvest = parseFloat(currentDunjeon) || 0;
-    const maxedBuildings = (targetLevel1 === MAX_LEVEL ? 1 : 0) + (buildingCount === 2 && targetLevel2 === MAX_LEVEL ? 1 : 0);
+    const maxedBuildings = (targetLevel1 >= 20 ? 1 : 0) + (buildingCount === 2 && targetLevel2 >= 20 ? 1 : 0);
     const dunjeonBonusPerHarvest = baseDunjeonPerHarvest * DUNJEON_BONUS_PER_BUILDING * maxedBuildings;
     const dailyDunjeonBonus = dunjeonBonusPerHarvest * DUNJEON_PER_DAY;
 
     const totalDailyGainWithBonus = dailyGainAll + dailyDunjeonBonus;
 
-    // Overall ROI: total cost (both resources, all buildings) / daily gain
-    const overallRoiDays = totalDailyGainWithBonus > 0 ? (totalCostAllBuildings * 2) / totalDailyGainWithBonus : Infinity;
+    // ROI 순수 (건물 생산량만): 20레벨 달성 전 회수 속도
+    const overallRoiDaysBase = dailyGainAll > 0 ? (totalCostAllBuildings * 2) / dailyGainAll : Infinity;
+    // ROI 보너스 포함: 20레벨 달성 후 회수 속도
+    const overallRoiDaysWithBonus = totalDailyGainWithBonus > 0 ? (totalCostAllBuildings * 2) / totalDailyGainWithBonus : Infinity;
 
     return {
       detailed1,
@@ -215,7 +223,8 @@ export default function RoiCalculatorPage() {
       dunjeonBonusPerHarvest,
       dailyDunjeonBonus,
       totalDailyGainWithBonus,
-      overallRoiDays,
+      overallRoiDaysBase,
+      overallRoiDaysWithBonus,
       maxedBuildings,
     };
   }, [data, currentLevel1, targetLevel1, currentLevel2, targetLevel2, buildingCount, currentDunjeon]);
@@ -402,8 +411,17 @@ export default function RoiCalculatorPage() {
 
             <div className="text-zinc-600 dark:text-zinc-400">투자 회수 기간 (ROI)</div>
             <div className="font-bold text-right text-amber-700 dark:text-amber-300">
-              {isFinite(analysis.overallRoiDays) ? `${analysis.overallRoiDays.toFixed(1)}일` : "-"}
+              {isFinite(analysis.overallRoiDaysBase) ? `${analysis.overallRoiDaysBase.toFixed(1)}일` : "-"}
             </div>
+
+            {analysis.dailyDunjeonBonus > 0 && (
+              <>
+                <div className="text-zinc-600 dark:text-zinc-400">ROI (20레벨 후 둔전 포함)</div>
+                <div className="font-bold text-right text-blue-600 dark:text-blue-400">
+                  {isFinite(analysis.overallRoiDaysWithBonus) ? `${analysis.overallRoiDaysWithBonus.toFixed(1)}일` : "-"}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -495,8 +513,8 @@ export default function RoiCalculatorPage() {
         <div className="text-xs text-zinc-400 dark:text-zinc-500 space-y-1 pt-2 border-t border-zinc-200 dark:border-zinc-800">
           <p>• ⚡ = 확인된 값, 📐 = 추정값 (셀 클릭으로 실제 값 입력 가능)</p>
           <p>• 비용: 목재/철광 동일 금액 소모</p>
-          <p>• 건물 최대 2동, 각 최대 20레벨</p>
-          <p>• 20레벨 달성 시 둔전 수확량 +25%/동 보너스</p>
+          <p>• 건물 최대 2동, 각 최대 25레벨</p>
+          <p>• 20레벨 달성 시 둔전 수확량 +25%/동 보너스 (1회성)</p>
           <p>• 둔전: 하루 5회 충전</p>
           <p>• ROI = 총 투입 자원(목+철) ÷ 하루 추가 생산량</p>
         </div>
