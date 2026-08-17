@@ -37,6 +37,12 @@ export default function Home() {
       >
         🧮 계산기
       </Link>
+      <Link
+        href="/matchup"
+        className="px-3 py-2 rounded-lg text-sm font-medium transition-colors text-white bg-red-600 hover:bg-red-500"
+      >
+        ⚔️ 상성표
+      </Link>
       <button
         onClick={handleOverlayClick}
         className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors text-white ${
