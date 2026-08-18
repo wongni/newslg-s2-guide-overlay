@@ -7,7 +7,7 @@
 param(
     [string]$Server = "216.45.63.224",
     [string]$User = "root",
-    [string]$Domain = "sam.wongni.xyz",
+    [string]$Domain = "cheonha.samgukji.top",
     [int]$Port = 80
 )
 
@@ -32,11 +32,14 @@ if ($LASTEXITCODE -ne 0) { throw "Upload failed" }
 scp scripts/remote-setup.sh "${REMOTE}:~/remote-setup.sh"
 if ($LASTEXITCODE -ne 0) { throw "Script upload failed" }
 
+scp scripts/edge-bootstrap.sh "${REMOTE}:~/edge-bootstrap.sh"
+if ($LASTEXITCODE -ne 0) { throw "Bootstrap upload failed" }
+
 # ============================================================
 # 3. Execute remote setup
 # ============================================================
 Write-Host "[3/4] Setting up server and deploying..." -ForegroundColor Cyan
-ssh $REMOTE "chmod +x ~/remote-setup.sh && bash ~/remote-setup.sh '$CONTAINER' '$IMAGE' '$Port' '$Domain' && rm -f ~/remote-setup.sh"
+ssh $REMOTE "chmod +x ~/remote-setup.sh ~/edge-bootstrap.sh && bash ~/remote-setup.sh '$CONTAINER' '$IMAGE' '$Port' '$Domain' && rm -f ~/remote-setup.sh ~/edge-bootstrap.sh"
 if ($LASTEXITCODE -ne 0) { throw "Remote deploy failed" }
 
 # ============================================================
