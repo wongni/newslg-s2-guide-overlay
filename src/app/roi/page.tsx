@@ -39,6 +39,12 @@ function defaultUpgradeCost(fromLevel: number): number {
     4: 12500,
     5: 17000,
     13: 61000,
+    14: 68625,  // 추정 (13→14=61000, 17→18=91500 보간, 증가폭 7625)
+    15: 76250,  // 추정 (보간)
+    16: 83875,  // 추정 (보간)
+    17: 91500,
+    18: 99500,
+    19: 107000,
   };
   if (known[fromLevel] !== undefined) return known[fromLevel];
 
@@ -76,7 +82,7 @@ interface LevelRow {
 const BASE_PRODUCTION = 200;
 
 function createDefaultData(): LevelRow[] {
-  const confirmedCosts = new Set([1, 2, 3, 4, 5, 13]);
+  const confirmedCosts = new Set([1, 2, 3, 4, 5, 13, 17, 18, 19]);
   const confirmedGains = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
 
   return Array.from({ length: MAX_LEVEL - 1 }, (_, i) => {
@@ -93,7 +99,7 @@ function createDefaultData(): LevelRow[] {
 function formatNumber(n: number): string {
   if (n >= 10000) {
     const v = n / 10000;
-    return v === Math.floor(v) ? `${v}만` : `${v.toFixed(1)}만`;
+    return v === Math.floor(v) ? `${v}만` : `${v.toFixed(2)}만`;
   }
   return n.toLocaleString();
 }
