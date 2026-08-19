@@ -6,15 +6,20 @@ interface TierSelectorProps {
   tier: TierLevel;
   onChangeTier: (tier: TierLevel) => void;
   compact?: boolean;
+  supportedTiers?: TierLevel[];
 }
 
-export function TierSelector({ tier, onChangeTier, compact = false }: TierSelectorProps) {
+export function TierSelector({ tier, onChangeTier, compact = false, supportedTiers }: TierSelectorProps) {
+  const visibleTiers = supportedTiers
+    ? TIER_LEVELS.filter((t) => supportedTiers.includes(t.id))
+    : TIER_LEVELS;
+
   return (
     <div className={`flex items-center gap-1 ${compact ? "px-0 py-1.5" : "mt-2"}`}>
       <span className={`mr-1 text-zinc-600 dark:text-zinc-400 ${compact ? "text-[10px]" : "text-xs"}`}>
         돌파:
       </span>
-      {TIER_LEVELS.map((t) => (
+      {visibleTiers.map((t) => (
         <button
           key={t.id}
           onClick={() => onChangeTier(t.id)}

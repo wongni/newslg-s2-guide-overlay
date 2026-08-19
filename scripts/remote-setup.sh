@@ -28,6 +28,11 @@ cd ~/s2-guide-overlay
 tar -xzf ~/deploy.tar.gz
 rm -f ~/deploy.tar.gz
 
+# Place .env file (uploaded separately)
+if [ -f ~/s2-env-temp ]; then
+  mv ~/s2-env-temp ~/s2-guide-overlay/.env
+fi
+
 # Stop and remove old container (idempotent)
 docker stop "$CONTAINER" 2>/dev/null || true
 docker rm "$CONTAINER" 2>/dev/null || true
@@ -41,6 +46,8 @@ docker run -d \
   --name "$CONTAINER" \
   --restart unless-stopped \
   --network "$EDGE_NET" \
+  -v /root/s2-data:/app/data \
+  --env-file /root/s2-guide-overlay/.env \
   "$IMAGE"
 
 echo '>>> [3/4] Firewall: leaving DOCKER-USER untouched...'

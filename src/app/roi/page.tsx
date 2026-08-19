@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import Link from "next/link";
 
 // --- 상수 ---
 const MAX_LEVEL = 25;
@@ -405,29 +404,19 @@ export default function RoiCalculatorPage() {
   }, [data, currentLevel1, targetLevel1, currentLevel2, targetLevel2, buildingCount, currentDunjeon]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
-      {/* Header */}
-      <header className="sticky top-0 z-10 backdrop-blur border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-950/95">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-lg font-bold">📈 자원 건물 ROI 계산기</h1>
-          <div className="flex gap-2">
-            <button
-              onClick={resetData}
-              className="px-3 py-1.5 rounded-lg text-xs transition-colors bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400"
-            >
-              데이터 초기화
-            </button>
-            <Link
-              href="/"
-              className="px-3 py-1.5 rounded-lg text-sm transition-colors bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400"
-            >
-              ← 가이드로
-            </Link>
-          </div>
-        </div>
-      </header>
-
+    <div className="text-zinc-900 dark:text-zinc-100">
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+        {/* Page title + reset */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-bold">📈 자원 건물 ROI 계산기</h1>
+          <button
+            onClick={resetData}
+            className="px-3 py-1.5 rounded-lg text-xs transition-colors bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400"
+          >
+            데이터 초기화
+          </button>
+        </div>
+
         {/* 설정 */}
         <div className="p-4 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-4">
           <h2 className="text-sm font-bold">설정</h2>

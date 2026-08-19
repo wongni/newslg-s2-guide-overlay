@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AuthProvider } from "@/components/AuthProvider";
+import { AppShell } from "@/components/AppShell";
 import { MonetizationFooter } from "@/components/monetization";
 import { DomainMigrationBanner } from "@/components/DomainMigrationBanner";
 
@@ -30,9 +32,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-          <DomainMigrationBanner />
-          <div className="flex-1">{children}</div>
-          <MonetizationFooter />
+          <AuthProvider>
+            <DomainMigrationBanner />
+            <AppShell>
+              <div className="flex-1">{children}</div>
+              <MonetizationFooter />
+            </AppShell>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

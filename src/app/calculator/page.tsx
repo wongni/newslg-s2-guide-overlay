@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import Link from "next/link";
 
 interface ResourceInput {
   current: string;
@@ -105,22 +104,11 @@ export default function CalculatorPage() {
   const fieldLabels = { current: "보유량", required: "필요량", perHour: "시간당 수급" };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
-      {/* Header */}
-      <header className="sticky top-0 z-10 backdrop-blur border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-950/95">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-lg font-bold">🏗️ 건물 업그레이드 계산기</h1>
-          <Link
-            href="/"
-            className="px-3 py-1.5 rounded-lg text-sm transition-colors bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400"
-          >
-            ← 가이드로
-          </Link>
-        </div>
-      </header>
-
-      {/* Body */}
+    <div className="text-zinc-900 dark:text-zinc-100">
       <main className="max-w-lg mx-auto px-4 py-6 space-y-5">
+        {/* Page title */}
+        <h1 className="text-lg font-bold">🏗️ 건물 업그레이드 계산기</h1>
+
         <p className="text-xs text-zinc-500 dark:text-zinc-400 text-right">
           단위: 만 (소숫점 가능)
         </p>

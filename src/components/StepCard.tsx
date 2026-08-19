@@ -11,6 +11,7 @@ interface StepCardProps {
   onToggle: (id: number) => void;
   onToggleExpand: () => void;
   compact?: boolean;
+  glossary?: Record<string, string>;
 }
 
 export function StepCard({
@@ -21,6 +22,7 @@ export function StepCard({
   onToggle,
   onToggleExpand,
   compact = false,
+  glossary = {},
 }: StepCardProps) {
   return (
     <div
@@ -90,7 +92,7 @@ export function StepCard({
               isCompleted ? "line-through text-zinc-400 dark:text-zinc-500" : ""
             }`}
           >
-            {renderWithTooltips(step.title)}
+            {renderWithTooltips(step.title, glossary)}
           </span>
         </div>
 
@@ -102,7 +104,7 @@ export function StepCard({
               <div className="text-zinc-800 dark:text-zinc-400 font-semibold mb-1">할 일</div>
               <ul className="list-disc list-inside space-y-0.5 text-zinc-800 dark:text-zinc-300">
                 {step.tasks.map((task, i) => (
-                  <li key={i}>{renderWithTooltips(task)}</li>
+                  <li key={i}>{renderWithTooltips(task, glossary)}</li>
                 ))}
               </ul>
             </div>
@@ -113,7 +115,7 @@ export function StepCard({
                 <div className="text-blue-700 dark:text-blue-400 font-semibold mb-1">조건</div>
                 <ul className="list-disc list-inside space-y-0.5 text-blue-800 dark:text-blue-300">
                   {step.conditions.map((cond, i) => (
-                    <li key={i}>{renderWithTooltips(cond)}</li>
+                    <li key={i}>{renderWithTooltips(cond, glossary)}</li>
                   ))}
                 </ul>
               </div>
@@ -125,7 +127,7 @@ export function StepCard({
                 <div className="text-red-700 dark:text-red-400 font-semibold mb-1">⚠ 주의</div>
                 <ul className="list-disc list-inside space-y-0.5 text-red-800 dark:text-red-300">
                   {step.warnings.map((warn, i) => (
-                    <li key={i}>{renderWithTooltips(warn)}</li>
+                    <li key={i}>{renderWithTooltips(warn, glossary)}</li>
                   ))}
                 </ul>
               </div>
@@ -137,7 +139,7 @@ export function StepCard({
                 <div className="text-sky-700 dark:text-sky-400 font-semibold mb-1">💡 팁</div>
                 <ul className="list-disc list-inside space-y-0.5 text-sky-800 dark:text-sky-300">
                   {step.tips.map((tip, i) => (
-                    <li key={i}>{renderWithTooltips(tip)}</li>
+                    <li key={i}>{renderWithTooltips(tip, glossary)}</li>
                   ))}
                 </ul>
               </div>

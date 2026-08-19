@@ -1,5 +1,10 @@
 import { GuideStep, GuideStepRaw } from "@/types/guide";
-import { TierLevel, TIER_VALUES } from "@/data/tier-config";
+import {
+  TierLevel,
+  TierValuesMap,
+  CommonValuesMap,
+  getMergedValues,
+} from "@/data/tier-config";
 
 /**
  * {{key}} 형식의 플레이스홀더를 진급 상태별 값으로 치환
@@ -24,9 +29,11 @@ function interpolateArray(
  */
 export function resolveSteps(
   rawSteps: GuideStepRaw[],
-  tier: TierLevel
+  tier: TierLevel,
+  tierValuesOverride?: TierValuesMap,
+  commonValuesOverride?: CommonValuesMap
 ): GuideStep[] {
-  const values = TIER_VALUES[tier];
+  const values = getMergedValues(tier, tierValuesOverride, commonValuesOverride);
   return rawSteps.map((step, index) => ({
     id: index + 1,
     phase: step.phase,
