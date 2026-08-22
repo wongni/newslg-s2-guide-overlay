@@ -3,12 +3,14 @@ import { JsonAuthCodeRepository } from './json-auth-code-repository';
 import { JsonGuideRepository } from './json-guide-repository';
 import { JsonReactionRepository } from './json-reaction-repository';
 import { JsonReportRepository } from './json-report-repository';
+import { JsonScoutRepository } from './json-scout-repository';
 
 export const userRepository = new JsonUserRepository();
 export const authCodeRepository = new JsonAuthCodeRepository();
 export const guideRepository = new JsonGuideRepository();
 export const reactionRepository = new JsonReactionRepository();
 export const reportRepository = new JsonReportRepository();
+export const scoutRepository = new JsonScoutRepository();
 
 export type {
   User,
@@ -24,4 +26,14 @@ export type {
   ReactionRepository,
   Report,
   ReportRepository,
+  ScoutData,
+  ScoutRepository,
+  EnemyDeck,
+  EnemyPlayer,
+  ScoutVerdict,
+  ScoutReinforcement,
+  ScoutTroopType,
+  EnemyArmy,
+  UpsertEnemyDeckInput,
+  UpsertEnemyPlayerInput,
 } from './types';

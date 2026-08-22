@@ -30,7 +30,7 @@ export const TEAMS = [
   "쌍황육",
   "손노육",
   "조순사",
-  "장서각도원",
+  "유관장",
 ] as const;
 
 export type TeamName = (typeof TEAMS)[number];
@@ -47,7 +47,7 @@ export const DECK_SLUG: Record<TeamName, string | null> = {
   쌍황육: "쌍황륙",
   손노육: "손로륙",
   조순사: "조순사",
-  장서각도원: "도원결의-낭만덱",
+  유관장: "도원결의-낭만덱",
 };
 
 export const DECK_BASE_URL = "https://cheonha-deck.xyz/decks";
@@ -75,6 +75,6 @@ export const MATCHUP_MATRIX: MatchupResult[][] = [
   ["완승", "열세", "우세", "비등", "열세", "열세", "비등", "우세", "완패"],
   // 조순사
   ["완승", "비등", "우세", "우세", "완패", "열세", "열세", "비등", "완패"],
-  // 장서각도원
+  // 유관장
   ["열세", "열세", "열세", "열세", "열세", "완승", "완승", "완승", "비등"],
 ];

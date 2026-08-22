@@ -21,6 +21,7 @@ export const TAB_ROUTES: TabRoute[] = [
   { path: "/guides", label: "커뮤니티", mobileLabel: "커뮤", icon: "🌐", primary: true },
   { path: "/giljak", label: "길작", mobileLabel: "길작", icon: "🛤️", primary: true },
   { path: "/matchup", label: "상성", mobileLabel: "상성", icon: "⚔️", primary: true },
+  { path: "/scout", label: "정찰", mobileLabel: "정찰", icon: "🕵️", primary: true },
   { path: "/roi", label: "ROI", mobileLabel: "ROI", icon: "📈", primary: false },
   { path: "/calculator", label: "계산기", mobileLabel: "계산기", icon: "🧮", primary: false },
   { path: "/leveling", label: "레벨업", mobileLabel: "레벨업", icon: "🎯", primary: false },
