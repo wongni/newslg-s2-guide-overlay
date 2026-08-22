@@ -44,38 +44,100 @@ function readStored(): MyDeckSettings {
   return DEFAULT;
 }
 
-export function useMyDeck() {
+export function useMyDeck(userId?: string | null) {
   const [settings, setSettings] = useState<MyDeckSettings>(DEFAULT);
   const [hydrated, setHydrated] = useState(false);
+  const loggedIn = Boolean(userId);
 
+  // 마운트/로그인 상태 변화 시 로드
   useEffect(() => {
-    setSettings(readStored());
-    setHydrated(true);
-  }, []);
+    let active = true;
 
-  const persist = useCallback((next: MyDeckSettings) => {
-    setSettings(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      // ignore
+    async function load() {
+      if (loggedIn) {
+        // 로그인: 백엔드 우선. 없으면 localStorage 값을 올려(마이그레이션) 저장.
+        try {
+          const res = await fetch("/api/scout/my-deck");
+          if (res.ok) {
+            const json = (await res.json()) as { settings: MyDeckSettings | null };
+            if (!active) return;
+            if (json.settings && Array.isArray(json.settings.decks)) {
+              setSettings({ decks: padDecks(json.settings.decks) });
+            } else {
+              // 백엔드에 없음 → 로컬 저장본을 마이그레이션
+              const local = readStored();
+              setSettings(local);
+              void fetch("/api/scout/my-deck", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(local),
+              });
+            }
+          } else {
+            // 인증 실패 등 → 로컬로 폴백
+            if (active) setSettings(readStored());
+          }
+        } catch {
+          if (active) setSettings(readStored());
+        } finally {
+          if (active) setHydrated(true);
+        }
+      } else {
+        // 비로그인: localStorage
+        if (active) {
+          setSettings(readStored());
+          setHydrated(true);
+        }
+      }
     }
-  }, []);
 
-  // 특정 군(0=1군 ... ARMY_COUNT-1=마지막군) 설정. deck=null 이면 비활성.
-  const setArmy = useCallback((index: number, deck: MyDeck | null) => {
-    setSettings((prev) => {
-      const decks = padDecks(prev.decks);
-      decks[index] = deck;
-      const next = { decks };
+    setHydrated(false);
+    load();
+    return () => {
+      active = false;
+    };
+  }, [loggedIn]);
+
+  // 저장: 로그인 시 백엔드 + 로컬, 비로그인 시 로컬만
+  const saveSettings = useCallback(
+    (next: MyDeckSettings) => {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       } catch {
         // ignore
       }
-      return next;
-    });
-  }, []);
+      if (loggedIn) {
+        void fetch("/api/scout/my-deck", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(next),
+        });
+      }
+    },
+    [loggedIn]
+  );
+
+  const persist = useCallback(
+    (next: MyDeckSettings) => {
+      setSettings(next);
+      saveSettings(next);
+    },
+    [saveSettings]
+  );
+
+  // 특정 군(0=1군 ... ARMY_COUNT-1=마지막군) 설정. deck=null 이면 비활성.
+  const setArmy = useCallback(
+    (index: number, deck: MyDeck | null) => {
+      setSettings((prev) => {
+        const decks = padDecks(prev.decks);
+        decks[index] = deck;
+        const next = { decks };
+        saveSettings(next);
+        return next;
+      });
+    },
+    [saveSettings]
+  );
 
   return { settings, hydrated, setArmy, persist };
 }

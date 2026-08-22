@@ -182,6 +182,25 @@ export interface ScoutRepository {
   deletePlayer(id: string): Promise<void>;
 }
 
+// --- 내 부대 설정 (로그인 유저별 서버 저장) ---------------------------------
+
+// 내 부대 1개 (덱 이름 + 강화 단계 + 선택적 병종)
+export interface MyDeckEntry {
+  name: string;
+  reinforcement: ScoutReinforcement;
+  troops?: (ScoutTroopType | null)[];
+}
+
+// 유저의 내 부대 설정 (1군~N군, null=미사용)
+export interface MyDeckSettingsData {
+  decks: (MyDeckEntry | null)[];
+}
+
+export interface MyDeckRepository {
+  get(userId: string): Promise<MyDeckSettingsData | null>;
+  set(userId: string, settings: MyDeckSettingsData): Promise<MyDeckSettingsData>;
+}
+
 export interface ReportRepository {
   find(guideId: string, userId: string): Promise<Report | null>;
   create(guideId: string, userId: string, reason: string): Promise<void>;

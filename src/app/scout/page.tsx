@@ -7,6 +7,7 @@ import { ScoutSearch } from "@/components/scout/ScoutSearch";
 import { EnemyEditor } from "@/components/scout/EnemyEditor";
 import { EnemyList } from "@/components/scout/EnemyList";
 import { useMyDeck } from "@/hooks/useMyDeck";
+import { useAuth } from "@/hooks/useAuth";
 import { useScoutData, type NewPlayerInput } from "@/hooks/useScoutData";
 import type { EnemyPlayer } from "@/lib/repositories/types";
 
@@ -17,7 +18,8 @@ type EditorState =
 
 export default function ScoutPage() {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
-  const { settings, hydrated, setArmy } = useMyDeck();
+  const { user } = useAuth();
+  const { settings, hydrated, setArmy } = useMyDeck(user?.id ?? null);
   const scout = useScoutData(authorized === true);
   const [editor, setEditor] = useState<EditorState>({ mode: "closed" });
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,7 +66,11 @@ export default function ScoutPage() {
       </div>
 
       {hydrated && (
-        <MyDeckSettingsPanel settings={settings} onSetArmy={setArmy} />
+        <MyDeckSettingsPanel
+          settings={settings}
+          onSetArmy={setArmy}
+          loggedIn={Boolean(user)}
+        />
       )}
 
       {/* 최상단: 적 검색 → 기존 적은 아래 목록 필터, 새 이름은 추가 */}
