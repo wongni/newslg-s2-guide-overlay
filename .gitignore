@@ -41,6 +41,11 @@ yarn-error.log*
 
 # kiro settings
 .kiro/
+# ...but track shared steering & prompts
+!.kiro/
+.kiro/*
+!.kiro/steering/
+!.kiro/prompts/
 
 # vercel
 .vercel
