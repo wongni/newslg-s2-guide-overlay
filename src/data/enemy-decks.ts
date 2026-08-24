@@ -173,6 +173,36 @@ function normalizeName(s: string): string {
   return s.replace(/\s+/g, "").trim();
 }
 
+// ---------------------------------------------------------------------------
+// 덱 필터용 핵심 장수 태그
+// ---------------------------------------------------------------------------
+// 드롭다운에서 덱을 좁혀서 찾을 때 쓰는 대표 장수 태그.
+// 하나 이상 선택하면 "선택된 장수를 모두 포함하는" 덱만 노출한다(AND).
+export const KEY_GENERAL_TAGS = [
+  "조운",
+  "사마의",
+  "마초",
+  "악진",
+  "여포",
+  "주유",
+  "관우",
+  "조조",
+  "유비",
+  "주태",
+] as const;
+
+export type KeyGeneralTag = (typeof KEY_GENERAL_TAGS)[number];
+
+// 덱의 무장 구성이 주어진 태그 장수들을 모두 포함하는지 (순서 무관, AND)
+export function deckHasGenerals(
+  generals: string[],
+  tags: readonly string[]
+): boolean {
+  if (tags.length === 0) return true;
+  const set = new Set(generals.map(normalizeName));
+  return tags.every((t) => set.has(normalizeName(t)));
+}
+
 // 이름(별칭 포함) → 표준 TeamName | null
 export function resolveStandardDeck(name: string): TeamName | null {
   const key = normalizeName(name);

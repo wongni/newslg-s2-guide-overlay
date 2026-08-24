@@ -10,6 +10,8 @@ import {
   resolveDeckByGenerals,
   REINFORCEMENTS,
   VERDICT_META,
+  KEY_GENERAL_TAGS,
+  deckHasGenerals,
   type Verdict,
   type TroopType,
 } from "@/data/enemy-decks";
@@ -46,22 +48,35 @@ export function ArmySlotEditor({
   const [newDeckGenerals, setNewDeckGenerals] = useState("");
   const [newDeckVerdict, setNewDeckVerdict] = useState<Verdict>("비등");
   const [busy, setBusy] = useState(false);
+  // 덱 드롭다운을 좁히는 핵심 장수 태그 필터 (선택된 장수 모두 포함 = AND)
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
 
   const selectedDeck = decks.find((d) => d.id === army.deckId) || null;
 
+  function toggleTag(tag: string) {
+    setTagFilter((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  }
+
   // 드롭다운 옵션: 기록된 덱 + 아직 없는 표준 덱(가상)
+  // 태그 필터가 있으면 선택된 장수를 모두 포함하는 덱만 노출한다.
   const deckOptions = useMemo(() => {
     const recordedStd = new Set(decks.filter((d) => d.isStandard).map((d) => d.name));
-    const recorded = decks.map((d) => ({
-      value: d.id,
-      label: `${d.name} (${d.generals.join("·")})${d.isStandard ? " ★" : ""}`,
-    }));
-    const virtual = TEAMS.filter((t) => !recordedStd.has(t)).map((t) => ({
+    const recorded = decks
+      .filter((d) => deckHasGenerals(d.generals, tagFilter))
+      .map((d) => ({
+        value: d.id,
+        label: `${d.name} (${d.generals.join("·")})${d.isStandard ? " ★" : ""}`,
+      }));
+    const virtual = TEAMS.filter(
+      (t) => !recordedStd.has(t) && deckHasGenerals(TEAM_GENERALS[t], tagFilter)
+    ).map((t) => ({
       value: `std:${t}`,
       label: `${t} (${TEAM_GENERALS[t].join("·")}) ★`,
     }));
     return { recorded, virtual };
-  }, [decks]);
+  }, [decks, tagFilter]);
 
   async function handleSelect(value: string) {
     if (value === "__add__") {
@@ -132,30 +147,74 @@ export function ArmySlotEditor({
 
       {/* 덱 선택 */}
       {!adding ? (
-        <select
-          value={army.deckId ?? ""}
-          onChange={(e) => handleSelect(e.target.value)}
-          className="w-full px-2 py-1.5 rounded-lg text-sm bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
-          <option value="">-- 미확인 (덱 없음) --</option>
-          {deckOptions.recorded.length > 0 && (
-            <optgroup label="기록된 덱">
-              {deckOptions.recorded.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </optgroup>
-          )}
-          <optgroup label="표준 덱">
-            {deckOptions.virtual.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </optgroup>
-          <option value="__add__">➕ 새 덱 추가...</option>
-        </select>
+        <>
+          {/* 장수 태그 필터 */}
+          <div className="flex items-center gap-1 flex-wrap">
+            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 shrink-0">
+              장수 필터
+            </span>
+            {KEY_GENERAL_TAGS.map((tag) => {
+              const active = tagFilter.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  aria-pressed={active}
+                  className={`px-1.5 py-0.5 rounded text-[11px] border transition-colors ${
+                    active
+                      ? "bg-emerald-600 border-emerald-600 text-white"
+                      : "bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500"
+                  }`}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+            {tagFilter.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setTagFilter([])}
+                className="px-1.5 py-0.5 rounded text-[11px] text-zinc-400 underline"
+              >
+                초기화
+              </button>
+            )}
+          </div>
+          <select
+            value={army.deckId ?? ""}
+            onChange={(e) => handleSelect(e.target.value)}
+            className="w-full px-2 py-1.5 rounded-lg text-sm bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="">-- 미확인 (덱 없음) --</option>
+            {deckOptions.recorded.length > 0 && (
+              <optgroup label="기록된 덱">
+                {deckOptions.recorded.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {deckOptions.virtual.length > 0 && (
+              <optgroup label="표준 덱">
+                {deckOptions.virtual.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            <option value="__add__">➕ 새 덱 추가...</option>
+          </select>
+          {tagFilter.length > 0 &&
+            deckOptions.recorded.length === 0 &&
+            deckOptions.virtual.length === 0 && (
+              <p className="text-[11px] text-zinc-400">
+                선택한 장수를 모두 포함하는 덱이 없습니다.
+              </p>
+            )}
+        </>
       ) : (
         <div className="space-y-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
           <p className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
