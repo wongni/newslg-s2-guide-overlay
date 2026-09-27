@@ -5,22 +5,55 @@ import path from "path";
 import { getAuthUser } from "@/lib/auth";
 import { userRepository } from "@/lib/repositories";
 
-// Bundled defaults (baked at build time)
-import defaultSteps from "@/data/guide-steps.json";
-import defaultTierValues from "@/data/tier-values.json";
-import defaultCommonValues from "@/data/common-values.json";
-import defaultGlossary from "@/data/glossary.json";
+// Bundled defaults (baked at build time), per season
+import s2Steps from "@/data/s2/guide-steps.json";
+import s2TierValues from "@/data/s2/tier-values.json";
+import s2CommonValues from "@/data/s2/common-values.json";
+import s2Glossary from "@/data/s2/glossary.json";
+import s3Steps from "@/data/s3/guide-steps.json";
+import s3TierValues from "@/data/s3/tier-values.json";
+import s3CommonValues from "@/data/s3/common-values.json";
+import s3Glossary from "@/data/s3/glossary.json";
+import { DEFAULT_SEASON, type SeasonId } from "@/data/season";
 
-// Runtime data directory (persists across restarts)
-const DATA_DIR = path.join(process.cwd(), "data");
-const GUIDE_FILE = path.join(DATA_DIR, "guide-steps.json");
-const TIER_VALUES_FILE = path.join(DATA_DIR, "tier-values.json");
-const COMMON_VALUES_FILE = path.join(DATA_DIR, "common-values.json");
-const GLOSSARY_FILE = path.join(DATA_DIR, "glossary.json");
+// 시즌별 번들 기본값
+const BUNDLED = {
+  s2: {
+    steps: s2Steps,
+    tierValues: s2TierValues,
+    commonValues: s2CommonValues,
+    glossary: s2Glossary,
+  },
+  s3: {
+    steps: s3Steps,
+    tierValues: s3TierValues,
+    commonValues: s3CommonValues,
+    glossary: s3Glossary,
+  },
+} as const;
 
-async function ensureDataDir() {
-  if (!existsSync(DATA_DIR)) {
-    await mkdir(DATA_DIR, { recursive: true });
+function resolveSeason(req: NextRequest): SeasonId {
+  const s = req.nextUrl.searchParams.get("season");
+  return s === "s2" || s === "s3" ? s : DEFAULT_SEASON;
+}
+
+// Runtime data directory (persists across restarts), per season
+const DATA_ROOT = path.join(process.cwd(), "data");
+
+function seasonFiles(season: SeasonId) {
+  const dir = path.join(DATA_ROOT, season);
+  return {
+    dir,
+    GUIDE_FILE: path.join(dir, "guide-steps.json"),
+    TIER_VALUES_FILE: path.join(dir, "tier-values.json"),
+    COMMON_VALUES_FILE: path.join(dir, "common-values.json"),
+    GLOSSARY_FILE: path.join(dir, "glossary.json"),
+  };
+}
+
+async function ensureDir(dir: string) {
+  if (!existsSync(dir)) {
+    await mkdir(dir, { recursive: true });
   }
 }
 
@@ -75,24 +108,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await ensureDataDir();
+    const season = resolveSeason(request);
+    const files = seasonFiles(season);
+    await ensureDir(files.dir);
 
     // Write guide steps
-    await writeFile(GUIDE_FILE, JSON.stringify(steps, null, 2), "utf-8");
+    await writeFile(files.GUIDE_FILE, JSON.stringify(steps, null, 2), "utf-8");
 
     // Write tier values if provided
     if (tierValues && typeof tierValues === "object") {
-      await writeFile(TIER_VALUES_FILE, JSON.stringify(tierValues, null, 2), "utf-8");
+      await writeFile(files.TIER_VALUES_FILE, JSON.stringify(tierValues, null, 2), "utf-8");
     }
 
     // Write common values if provided
     if (commonValues && typeof commonValues === "object") {
-      await writeFile(COMMON_VALUES_FILE, JSON.stringify(commonValues, null, 2), "utf-8");
+      await writeFile(files.COMMON_VALUES_FILE, JSON.stringify(commonValues, null, 2), "utf-8");
     }
 
     // Write glossary if provided
     if (glossary && typeof glossary === "object") {
-      await writeFile(GLOSSARY_FILE, JSON.stringify(glossary, null, 2), "utf-8");
+      await writeFile(files.GLOSSARY_FILE, JSON.stringify(glossary, null, 2), "utf-8");
     }
 
     return NextResponse.json({
@@ -108,13 +143,17 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Public read — no auth required
-    const steps = await loadJson(GUIDE_FILE, defaultSteps);
-    const tierValues = await loadJson(TIER_VALUES_FILE, defaultTierValues);
-    const commonValues = await loadJson(COMMON_VALUES_FILE, defaultCommonValues);
-    const glossary = await loadJson(GLOSSARY_FILE, defaultGlossary);
+    const season = resolveSeason(request);
+    const files = seasonFiles(season);
+    const bundled = BUNDLED[season];
+
+    const steps = await loadJson(files.GUIDE_FILE, bundled.steps);
+    const tierValues = await loadJson(files.TIER_VALUES_FILE, bundled.tierValues);
+    const commonValues = await loadJson(files.COMMON_VALUES_FILE, bundled.commonValues);
+    const glossary = await loadJson(files.GLOSSARY_FILE, bundled.glossary);
 
     return NextResponse.json({ steps, tierValues, commonValues, glossary });
   } catch (error) {

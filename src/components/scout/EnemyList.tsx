@@ -19,6 +19,7 @@ interface EnemyListProps {
   decks: EnemyDeck[];
   myDecks: (MyDeck | null)[]; // 내 부대 [1군~5군]
   filter?: string; // 상단 검색어와 연동 (이름 부분일치)
+  generalFilter?: ReadonlySet<string>; // 장수 필터 (덱에 포함된 장수 기준, OR)
   onEdit: (player: EnemyPlayer) => void;
   onDeletePlayer: (id: string) => void;
 }
@@ -56,6 +57,7 @@ export function EnemyList({
   decks,
   myDecks,
   filter = "",
+  generalFilter,
   onEdit,
   onDeletePlayer,
 }: EnemyListProps) {
@@ -69,17 +71,33 @@ export function EnemyList({
     const sorted = [...players].sort((a, b) =>
       b.updatedAt.localeCompare(a.updatedAt)
     );
-    if (!q) return sorted;
-    return sorted.filter((p) => p.name.includes(q));
-  }, [players, filter]);
+    let result = sorted;
+    if (q) {
+      result = result.filter((p) => p.name.includes(q));
+    }
+    // 장수 필터: 선택된 장수 중 하나라도 이 적의 덱 라인업에 있으면 표시 (OR)
+    if (generalFilter && generalFilter.size > 0) {
+      result = result.filter((p) =>
+        p.armies.some((army) => {
+          const ed = army.deckId ? deckById.get(army.deckId) : undefined;
+          return ed?.generals.some((g) => generalFilter.has(g)) ?? false;
+        })
+      );
+    }
+    return result;
+  }, [players, filter, generalFilter, deckById]);
 
   if (players.length === 0) return null;
+
+  const hasGeneralFilter = Boolean(generalFilter && generalFilter.size > 0);
 
   return (
     <div className="space-y-3">
       {filtered.length === 0 && (
         <p className="text-xs text-zinc-400 dark:text-zinc-500">
-          &quot;{filter}&quot;와 일치하는 기록이 없습니다.
+          {hasGeneralFilter && !filter.trim()
+            ? "선택한 장수가 포함된 적 기록이 없습니다."
+            : `"${filter}"와 일치하는 기록이 없습니다.`}
         </p>
       )}
 

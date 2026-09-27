@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>레벨 / 경험치 그래프</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, "Malgun Gothic", sans-serif; margin: 24px; background:#0f1115; color:#e6e6e6; }
+  h1 { font-size: 20px; } h2 { font-size: 16px; margin-top:36px; }
+  .card { background:#181b21; border:1px solid #262a33; border-radius:10px; padding:16px; margin-bottom:24px; }
+  .note { font-size:13px; color:#9aa4b2; line-height:1.6; }
+  code { background:#22262f; padding:2px 6px; border-radius:4px; color:#ffd479; }
+  canvas { max-height:420px; }
+</style>
+</head>
+<body>
+<h1>레벨별 경험치 그래프</h1>
+
+<div class="card">
+  <h2 style="margin-top:0">1. 다음 레벨 필요 경험치 (레벨 5–49)</h2>
+  <canvas id="chartNext"></canvas>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">2. 휴식 경험치 / 시간 &amp; 레벨업 소요 시간 (레벨 5–49)</h2>
+  <p class="note">
+    <b>모든 레벨(5–49)의 휴식 경험치/시간이 실측값</b>입니다. 발견한 공식:
+    <code>휴식경험치 = 22500 + 0.078 × (다음 레벨 필요 경험치)</code>
+    — 레벨 5~41 구간의 실측값에 정확히 일치합니다.<br>
+    레벨 42~48은 실측값이 공식값보다 <b>높습니다</b>(계수 0.078 유지 시 계산한 값보다 실제가 큼).
+    회색 점선 = <code>계산값</code>(docs/level-exp.md의 4번째 열), 파랑 점 = 실측값,
+    빨간 X = 실측값이 계산값과 다른 레벨(42~48).
+  </p>
+  <p id="mismatchNote" class="note" style="color:#ff6b81;font-weight:600"></p>
+  <canvas id="chartRest"></canvas>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">3. 토지레벨별 데이터</h2>
+  <canvas id="chartLand"></canvas>
+</div>
+
+<script>
+const nextExp = {5:2000,6:3000,7:4000,8:5000,9:6000,10:8000,11:11000,12:14000,13:17000,14:20000,15:28000,16:32000,17:36000,18:40000,19:44000,20:80000,21:96000,22:114000,23:134000,24:158000,25:192000,26:220000,27:252000,28:288000,29:328000,30:380000,31:428000,32:480000,33:536000,34:596000,35:720000,36:840000,37:960000,38:1080000,39:1200000,40:1500000,41:1800000,42:2100000,43:2400000,44:2700000,45:3000000,46:3300000,47:3600000,48:4000000,49:4500000};
+// 휴식 경험치/시간 — docs/level-exp.md 3번째 열 (전 레벨 실측)
+const restMeasured = {5:22656,6:22734,7:22812,8:22890,9:22968,10:23124,11:23358,12:23592,13:23826,14:24060,15:24684,16:24996,17:25308,18:25620,19:25932,20:28740,21:29988,22:31392,23:32952,24:34824,25:37476,26:39660,27:42156,28:44964,29:48084,30:52140,31:55884,32:59940,33:64308,34:68988,35:78660,36:88020,37:97380,38:106740,39:116100,40:139500,41:162900,42:186300,43:209700,44:233100,45:256500,46:262500,47:268500,48:276500,49:286500};
+// 계산값 — docs/level-exp.md 4번째 열 (공식 기반; 42~48은 실측과 다름)
+const restFormula = {5:22656,6:22734,7:22812,8:22890,9:22968,10:23124,11:23358,12:23592,13:23826,14:24060,15:24684,16:24996,17:25308,18:25620,19:25932,20:28740,21:29988,22:31392,23:32952,24:34824,25:37476,26:39660,27:42156,28:44964,29:48084,30:52140,31:55884,32:59940,33:64308,34:68988,35:78660,36:88020,37:97380,38:106740,39:116100,40:139500,41:162900,42:181225,43:198100,44:213525,45:227500,46:240025,47:251100,48:266833,49:286500};
+
+const levels = Object.keys(nextExp).map(Number).sort((a,b)=>a-b);
+
+// 전 레벨 실측값 사용
+const restVal = levels.map(L=>restMeasured[L]);
+
+// 공식(계산값) 예측선 + 실측값과 어긋나는 지점 판별
+const formulaLine = levels.map(L=>restFormula[L]);
+const mismatch = levels.map(L=> restMeasured[L]!==restFormula[L] ? restMeasured[L] : null);
+const mismatchCount = mismatch.filter(v=>v!==null).length;
+document.getElementById('mismatchNote').textContent =
+  mismatchCount===0
+    ? '✔ 모든 레벨에서 실측값과 계산값이 일치합니다.'
+    : `⚠ 실측값 ≠ 계산값 레벨: ${levels.filter((L,i)=>mismatch[i]!==null).join(', ')} (빨간 X). 실측이 계산값보다 높음.`;
+
+const grid = {color:'#262a33'}, ticks={color:'#9aa4b2'};
+const axes = { x:{grid, ticks, title:{display:true,text:'레벨',color:'#9aa4b2'}}, y:{grid, ticks} };
+
+new Chart(document.getElementById('chartNext'), {
+  type:'line',
+  data:{ labels:levels, datasets:[{
+    label:'다음 레벨 필요 경험치', data:levels.map(L=>nextExp[L]),
+    borderColor:'#4f9dff', backgroundColor:'#4f9dff', tension:0.2, pointRadius:3 }]},
+  options:{ plugins:{legend:{labels:{color:'#e6e6e6'}}}, scales:axes }
+});
+
+// 레벨업 소요 시간(휴식만) = 필요경험치 / 시간당 휴식경험치
+const levelUpHours = levels.map((L,i)=> +(nextExp[L]/restVal[i]).toFixed(2));
+
+// 토지 개발로 다음 레벨까지 필요한 개발 횟수(=시간) = 필요경험치 / 토지개발 1회 경험치
+// 각 캐릭터 레벨에서 100% 경험치를 받을 수 있는 가장 높은(경험치 많은) 토지 사용
+// land: [토지레벨, 100%최소레벨, 1회 경험치]
+const landTable = [[2,5,2560],[3,5,2800],[4,5,6400],[5,5,12000],[6,19,26000],[7,24,44000],[8,29,80000],[9,34,140000],[10,39,200000],[11,41,300000],[12,43,400000]];
+const landDevMeta = levels.map(()=>null);
+const landDevCount = levels.map((L,i)=>{
+  const avail = landTable.filter(r=>r[1]<=L);
+  const best = avail.reduce((a,b)=> b[2]>a[2]?b:a, avail[0]);
+  landDevMeta[i] = {landLv:best[0], landExp:best[2]};
+  return +(nextExp[L]/best[2]).toFixed(2);
+});
+
+new Chart(document.getElementById('chartRest'), {
+  type:'line',
+  data:{ labels:levels, datasets:[
+    {
+      label:'휴식 경험치/시간 (실측)', data:restVal, yAxisID:'y',
+      borderColor:'#4f9dff', backgroundColor:'#4f9dff', tension:0.2, order:2,
+      pointRadius:4
+    },
+    {
+      label:'계산값 (공식)', data:formulaLine, yAxisID:'y',
+      borderColor:'#9aa4b2', borderDash:[6,4], borderWidth:1.5,
+      pointRadius:0, tension:0.2, order:3
+    },
+    {
+      label:'실측값 ≠ 공식값', data:mismatch, yAxisID:'y',
+      borderColor:'transparent', backgroundColor:'#ff4757',
+      pointStyle:'crossRot', pointRadius:9, pointBorderColor:'#ff4757',
+      pointBorderWidth:3, showLine:false, order:1
+    },
+    {
+      label:'레벨업 소요 시간(휴식만, 시간)', data:levelUpHours, yAxisID:'yTime',
+      borderColor:'#2ed573', backgroundColor:'#2ed573', tension:0.2, order:0,
+      pointRadius:3
+    },
+    {
+      label:'토지개발로 레벨업까지 필요 횟수(=시간)', data:landDevCount, yAxisID:'yTime',
+      borderColor:'#ffd479', backgroundColor:'#ffd479', tension:0.2, order:1,
+      pointRadius:4
+    }
+  ]},
+  options:{
+    plugins:{ legend:{labels:{color:'#e6e6e6'}},
+      tooltip:{callbacks:{label:(c)=>{
+        if (c.datasetIndex===4){ const m=landDevMeta[c.dataIndex]; return `토지 Lv${m?m.landLv:''}(1회 ${m?m.landExp.toLocaleString():''}exp) → ${c.parsed.y}회 = ${c.parsed.y}시간`; }
+        if (c.datasetIndex===3) return `레벨업 소요 ${c.parsed.y.toLocaleString()}시간`;
+        if (c.datasetIndex===2) return `실측 ${c.parsed.y.toLocaleString()} (계산값과 불일치)`;
+        if (c.datasetIndex===1) return `계산값 ${c.parsed.y.toLocaleString()}`;
+        return `${c.parsed.y.toLocaleString()} (실측)`;
+      }}}},
+    scales:{
+      x:{grid, ticks, title:{display:true,text:'레벨',color:'#9aa4b2'}},
+      y:{position:'left', grid, ticks, title:{display:true,text:'휴식 경험치/시간',color:'#9aa4b2'}},
+      yTime:{position:'right', grid:{drawOnChartArea:false}, ticks, title:{display:true,text:'레벨업 소요 시간(h) / 토지개발 횟수',color:'#2ed573'}}
+    } }
+});
+
+// Land data
+const landLv=[2,3,4,5,6,7,8,9,10,11,12];
+const minLv=[5,5,5,5,19,24,29,34,39,41,43];
+const defLv=[3,10,15,22,27,33,37,42,45,48,50];
+const landExp=[2560,2800,6400,12000,26000,44000,80000,140000,200000,300000,400000];
+
+new Chart(document.getElementById('chartLand'), {
+  type:'line',
+  data:{ labels:landLv, datasets:[
+    {label:'경험치 (오른쪽 축)', data:landExp, borderColor:'#ff6b81', yAxisID:'yExp', tension:0.2, pointRadius:3},
+    {label:'100% 받는 최소 레벨', data:minLv, borderColor:'#4f9dff', yAxisID:'yLv', tension:0.2, pointRadius:3},
+    {label:'수비군 레벨', data:defLv, borderColor:'#2ed573', yAxisID:'yLv', tension:0.2, pointRadius:3}
+  ]},
+  options:{
+    plugins:{legend:{labels:{color:'#e6e6e6'}}},
+    scales:{
+      x:{grid, ticks, title:{display:true,text:'토지레벨',color:'#9aa4b2'}},
+      yLv:{position:'left', grid, ticks, title:{display:true,text:'레벨',color:'#9aa4b2'}},
+      yExp:{position:'right', grid:{drawOnChartArea:false}, ticks, title:{display:true,text:'경험치',color:'#9aa4b2'}}
+    }
+  }
+});
+</script>
+</body>
+</html>

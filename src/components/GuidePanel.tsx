@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useEffect, useRef, useState, useCallback } from "react";
-import guideSteps from "@/data/guide-steps.json";
+import guideSteps from "@/data/guide-steps";
 import { GuideStepRaw } from "@/types/guide";
 import { TIER_VALUES, COMMON_VALUES, TierValuesMap, CommonValuesMap } from "@/data/tier-config";
 import { useProgress } from "@/hooks/useProgress";

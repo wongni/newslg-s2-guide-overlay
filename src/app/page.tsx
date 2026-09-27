@@ -4,6 +4,7 @@ import { usePictureInPicture } from "@/hooks/usePictureInPicture";
 import { GuidePanel } from "@/components/GuidePanel";
 import { PipOverlayContent } from "@/components/PipOverlayContent";
 import { References } from "@/components/References";
+import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 
 export default function Home() {
   const { isPipOpen, pipWindow, openPip, closePip } = usePictureInPicture();
@@ -18,8 +19,8 @@ export default function Home() {
 
   return (
     <>
-      {/* PiP overlay toggle button */}
-      <div className="max-w-3xl mx-auto px-4 pt-3">
+      {/* 시즌 선택 + PiP overlay toggle */}
+      <div className="max-w-3xl mx-auto px-4 pt-3 flex items-center justify-between gap-3 flex-wrap">
         <button
           onClick={handleOverlayClick}
           className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-white ${
@@ -28,6 +29,9 @@ export default function Home() {
         >
           {isPipOpen ? "✕ 오버레이 닫기" : "🖥 오버레이"}
         </button>
+        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-2">
+          <SeasonSwitcher />
+        </div>
       </div>
 
       <GuidePanel />

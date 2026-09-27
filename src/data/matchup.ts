@@ -1,80 +1,24 @@
-// 조합 상성표 데이터
-// 행 = 공격(attacker), 열 = 방어(defender)
+// [배럴] 활성 시즌의 matchup 데이터를 re-export 한다.
+// 실제 데이터는 ./s2/matchup, ./s3/matchup 에 있다.
+//
+// 시즌마다 조합(TeamName) 목록이 다르므로, UI 호환을 위해
+// 배럴 레벨에서는 조합명을 넓은 문자열 기반 타입으로 노출한다.
 
-export type MatchupResult = "완승" | "우세" | "비등" | "열세" | "완패";
+import { getActiveSeason } from "./season";
+import * as s2 from "./s2/matchup";
+import * as s3 from "./s3/matchup";
 
-export interface MatchupMeta {
-  label: MatchupResult;
-  hanja: string; // 勝 / 優 / 平 / 劣 / 敗
-  score: number; // 상성 점수 (승률 계산용)
-  // 배경색 / 텍스트색 (라이트/다크 공통, 셀 위 가독성 고려)
-  bg: string;
-  text: string;
-}
+const active = getActiveSeason() === "s2" ? s2 : s3;
 
-export const MATCHUP_META: Record<MatchupResult, MatchupMeta> = {
-  완승: { label: "완승", hanja: "勝", score: 2, bg: "#5b8def", text: "#0b1c3f" },
-  우세: { label: "우세", hanja: "優", score: 1, bg: "#a9c9f5", text: "#1a3157" },
-  비등: { label: "비등", hanja: "平", score: 0, bg: "#f5f0d8", text: "#5c5738" },
-  열세: { label: "열세", hanja: "劣", score: -1, bg: "#f7c9a8", text: "#5c3418" },
-  완패: { label: "완패", hanja: "敗", score: -2, bg: "#ef9a9a", text: "#5c1c1c" },
-};
+export type { MatchupResult, MatchupMeta } from "./s3/matchup";
 
-// 조합 목록 (매트릭스의 행/열 순서와 동일)
-export const TEAMS = [
-  "조감초",
-  "여진악",
-  "악순주",
-  "태황유",
-  "태원마",
-  "쌍황육",
-  "손노육",
-  "조순사",
-  "유관장",
-] as const;
+// 시즌별 조합명 합집합. (실제 데이터 정합성은 각 시즌 내부 모듈에서 보장)
+export type TeamName = string;
 
-export type TeamName = (typeof TEAMS)[number];
-
-// 상성표 조합명 → cheonha-deck.xyz 덱 slug 매핑
-// (URL: https://cheonha-deck.xyz/decks/{slug})
-// null = 대응되는 덱 페이지가 없음 (링크 비활성화)
-export const DECK_SLUG: Record<TeamName, string | null> = {
-  조감초: "조감초",
-  여진악: "여진악",
-  악순주: "주순악",
-  태황유: "태황어",
-  태원마: "마원주",
-  쌍황육: "쌍황륙",
-  손노육: "손로륙",
-  조순사: "조순사",
-  유관장: "도원결의-낭만덱",
-};
-
-export const DECK_BASE_URL = "https://cheonha-deck.xyz/decks";
-
-export function deckUrl(team: TeamName): string | null {
-  const slug = DECK_SLUG[team];
-  return slug ? `${DECK_BASE_URL}/${encodeURIComponent(slug)}` : null;
-}
-
-// matrix[공격][방어]
-export const MATCHUP_MATRIX: MatchupResult[][] = [
-  // 조감초
-  ["비등", "완승", "우세", "우세", "완승", "완패", "완패", "완패", "우세"],
-  // 여진악
-  ["완패", "비등", "우세", "비등", "비등", "우세", "우세", "비등", "우세"],
-  // 악순주
-  ["열세", "열세", "비등", "완승", "완승", "열세", "열세", "열세", "우세"],
-  // 태황유
-  ["열세", "비등", "완패", "비등", "우세", "비등", "비등", "열세", "우세"],
-  // 태원마
-  ["완패", "비등", "완패", "열세", "비등", "우세", "우세", "완승", "우세"],
-  // 쌍황육
-  ["완승", "열세", "우세", "비등", "열세", "비등", "우세", "우세", "완패"],
-  // 손노육
-  ["완승", "열세", "우세", "비등", "열세", "열세", "비등", "우세", "완패"],
-  // 조순사
-  ["완승", "비등", "우세", "우세", "완패", "열세", "열세", "비등", "완패"],
-  // 유관장
-  ["열세", "열세", "열세", "열세", "열세", "완승", "완승", "완승", "비등"],
-];
+export const MATCHUP_META = active.MATCHUP_META;
+export const TEAMS: readonly TeamName[] = active.TEAMS;
+export const DECK_SLUG: Record<TeamName, string | null> =
+  active.DECK_SLUG as Record<TeamName, string | null>;
+export const DECK_BASE_URL = active.DECK_BASE_URL;
+export const MATCHUP_MATRIX = active.MATCHUP_MATRIX;
+export const deckUrl = active.deckUrl as (team: TeamName) => string | null;

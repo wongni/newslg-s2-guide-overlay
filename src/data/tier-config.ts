@@ -1,34 +1,18 @@
-import tierValuesJson from "./tier-values.json";
-import commonValuesJson from "./common-values.json";
+// [배럴] 활성 시즌의 tier-config(진급 티어 값/공통 값) 로직·데이터.
+import { getActiveSeason } from "./season";
+import * as s2 from "./s2/tier-config";
+import * as s3 from "./s3/tier-config";
+
+const active = getActiveSeason() === "s2" ? s2 : s3;
 
 export type TierLevel = "명함" | "저돌파" | "중돌파" | "고돌파";
-
-export const TIER_LEVELS: { id: TierLevel; label: string; description: string }[] = [
-  { id: "명함", label: "명함", description: "무진급 (백판)" },
-  { id: "저돌파", label: "저돌파", description: "1~2진급 (저홍)" },
-  { id: "중돌파", label: "중돌파", description: "3진급 (중홍)" },
-  { id: "고돌파", label: "고돌파", description: "4진급+ (고홍·만홍)" },
-];
-
 export type TierValuesMap = Record<TierLevel, Record<string, string>>;
 export type CommonValuesMap = Record<string, string>;
 
-/**
- * 공통 값 (티어 무관). 예: 수비군 난이도.
- * 한 번 수정하면 모든 티어에 동일 적용.
- */
-export const COMMON_VALUES: CommonValuesMap = commonValuesJson;
+export const TIER_LEVELS = active.TIER_LEVELS;
+export const COMMON_VALUES: CommonValuesMap = active.COMMON_VALUES;
+export const TIER_VALUES: TierValuesMap = active.TIER_VALUES as TierValuesMap;
 
-/**
- * 진급 상태별 동적 값.
- * guide-steps.json 내 텍스트에 {{key}} 플레이스홀더로 참조됨.
- */
-export const TIER_VALUES: TierValuesMap = tierValuesJson as TierValuesMap;
-
-/**
- * 최종 resolve 시 사용할 병합된 값 (common + tier-specific).
- * 동일 key가 있을 경우 tier-specific이 우선.
- */
 export function getMergedValues(
   tier: TierLevel,
   tierValues?: TierValuesMap,

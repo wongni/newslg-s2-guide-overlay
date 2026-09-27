@@ -6,7 +6,7 @@ import { BaseGuidePicker } from "@/components/BaseGuidePicker";
 import { GuideEditor } from "@/components/GuideEditor";
 import { GuideStepRaw } from "@/types/guide";
 import { TierValuesMap, CommonValuesMap, TIER_VALUES, COMMON_VALUES } from "@/data/tier-config";
-import guideSteps from "@/data/guide-steps.json";
+import guideSteps from "@/data/guide-steps";
 import Link from "next/link";
 
 const defaultSteps: GuideStepRaw[] = guideSteps;

@@ -14,10 +14,11 @@ import { useState, useMemo, useCallback, useEffect } from "react";
  *  - 오미자: 체력 +60 회복, 하루 3회 사용 가능, 매일 오전 8시에 1개 선물 지급
  *  - 레벨별 필요경험치: 아래 EXP_TABLE (표에 없는 레벨은 선형 보간)
  *
- * 경험치/위험 규칙 (수비군 레벨 기준):
- *  - 수비군레벨 <= 내 레벨              →  100% 경험치, 전복(실패) 위험 없음 (안전)
- *  - 내레벨 < 수비군레벨 <= 내레벨+5    →  100% 경험치, 단 전복(실패) 위험 있음 (도전)
- *  - 수비군레벨 > 내레벨+5              →  70% 경험치 + 전복(실패) 위험 (도전)
+ * 경험치/위험 규칙:
+ *  - 각 토는 "경험치 100% 받는 최소 레벨"(minLevel100)이 있다. 내 레벨이 이 값 이상이면 100% 경험치.
+ *    (minLevel100 미입력 시 "수비군레벨 - 5" 기준으로 대체 계산)
+ *  - 내 레벨 < minLevel100  →  70% 경험치
+ *  - 위험(전복 실패) 판정은 수비군레벨 기준: 수비군레벨 > 내레벨 이면 도전(전복 위험) 구간.
  *
  * 경로 2가지:
  *  1) 안전 경로: 수비군레벨 <= 내 레벨인 토만 사용(전복 위험 0). 상위 토는 레벨이 오르며 열린다.
@@ -34,17 +35,43 @@ const OMIJA_GIFT_HOUR = 8; // 매일 오전 8시에 1개 선물
 const SAFE_LEVEL_GAP = 5; // (수비군레벨 - 내레벨)이 이 값 이하면 경험치 100%, 초과면 70%
 const RISKY_EXP_FACTOR = 0.7; // 레벨차 5 초과 도전 시 획득 경험치 비율
 
-// 레벨 L → L+1 필요경험치 (만). 표에 없는 레벨은 인접 구간 기울기로 선형 보간/외삽한다.
+// 레벨 L → L+1 필요경험치 (경험치 값). 5~34는 확정 데이터(docs/level-exp.md), 그 위는 관측값 기반 외삽/보간.
 const EXP_TABLE: [number, number][] = [
-  [27, 25.2],
-  [28, 28.8],
-  [30, 38],
-  [32, 48],
-  [38, 108],
-  [43, 240],
-  [44, 270],
-  [45, 300],
-  [46, 330],
+  [5, 2000],
+  [6, 3000],
+  [7, 4000],
+  [8, 5000],
+  [9, 6000],
+  [10, 8000],
+  [11, 11000],
+  [12, 14000],
+  [13, 17000],
+  [14, 20000],
+  [15, 28000],
+  [16, 32000],
+  [17, 36000],
+  [18, 40000],
+  [19, 44000],
+  [20, 80000],
+  [21, 96000],
+  [22, 114000],
+  [23, 134000],
+  [24, 158000],
+  [25, 192000],
+  [26, 220000],
+  [27, 252000],
+  [28, 288000],
+  [29, 328000],
+  [30, 380000],
+  [31, 428000],
+  [32, 480000],
+  [33, 536000],
+  [34, 596000],
+  [38, 1080000],
+  [43, 2400000],
+  [44, 2700000],
+  [45, 3000000],
+  [46, 3300000],
 ];
 
 function expNeeded(level: number): number {
@@ -98,22 +125,27 @@ interface ToeRow {
   toe: string;
   exp: string;
   defender: string; // 수비군 레벨 (선택)
+  minLevel100: string; // 경험치 100% 받는 최소 레벨 (선택)
 }
 
 const DEFAULT_TOES: ToeRow[] = [
-  { id: 1, toe: "6토", exp: "2", defender: "27" },
-  { id: 2, toe: "7토", exp: "4.4", defender: "33" },
-  { id: 3, toe: "8토", exp: "8", defender: "37" },
-  { id: 4, toe: "9토", exp: "14", defender: "42" },
-  { id: 5, toe: "10토", exp: "20", defender: "45" },
-  { id: 6, toe: "11토", exp: "30", defender: "48" },
-  { id: 7, toe: "12토", exp: "40", defender: "50" },
+  { id: 1, toe: "2토", exp: "2560", defender: "3", minLevel100: "5" },
+  { id: 2, toe: "3토", exp: "2800", defender: "10", minLevel100: "5" },
+  { id: 3, toe: "4토", exp: "6400", defender: "15", minLevel100: "5" },
+  { id: 4, toe: "5토", exp: "12000", defender: "22", minLevel100: "5" },
+  { id: 5, toe: "6토", exp: "26000", defender: "27", minLevel100: "19" },
+  { id: 6, toe: "7토", exp: "44000", defender: "33", minLevel100: "24" },
+  { id: 7, toe: "8토", exp: "80000", defender: "37", minLevel100: "29" },
+  { id: 8, toe: "9토", exp: "140000", defender: "42", minLevel100: "34" },
+  { id: 9, toe: "10토", exp: "200000", defender: "45", minLevel100: "39" },
+  { id: 10, toe: "11토", exp: "300000", defender: "48", minLevel100: "41" },
+  { id: 11, toe: "12토", exp: "400000", defender: "50", minLevel100: "43" },
 ];
 
 // 기본 입력값 (저장된 값이 없을 때만 사용). "초기화" 시에도 이 값으로 되돌아온다.
 const DEFAULT_FORM = {
   currentLevel: "43",
-  currentExp: "162",
+  currentExp: "1620000",
   targetLevel: "50",
   currentStamina: "81",
   omija: "1",
@@ -121,7 +153,8 @@ const DEFAULT_FORM = {
 };
 
 // 마지막 입력/계산 값을 저장하는 localStorage 키
-const STORAGE_KEY = "leveling-form-v1";
+// v3: 경험치 단위를 "만"에서 "일 단위(실제 경험치 값)"로 변경 (이전 저장값 오해석 방지)
+const STORAGE_KEY = "leveling-form-v3";
 
 // 시각화 막대/범례용 토 색상 팔레트 (도전=위험 구간은 빨강으로 별도 표시)
 const TOE_COLORS = [
@@ -138,12 +171,14 @@ interface ToeInput {
   label: string;
   exp: number;
   defender: number | null;
+  minLevel100: number | null; // 경험치 100% 받는 최소 레벨
 }
 
 interface BreakdownItem {
   label: string;
   count: number;
   defender: number | null;
+  minLevel100: number | null;
   risky: boolean;
   factor: number;
 }
@@ -161,6 +196,14 @@ interface SimResult {
 }
 
 const MAX_ITER = 1_000_000;
+
+// 해당 토를 내 레벨(level)로 소탕할 때 경험치 100% 여부.
+// minLevel100이 있으면 그 값 기준, 없으면 "수비군레벨 - SAFE_LEVEL_GAP" 기준으로 대체.
+function isFullExp(toe: ToeInput, level: number): boolean {
+  if (toe.minLevel100 != null) return level >= toe.minLevel100;
+  if (toe.defender != null) return level >= (toe.defender as number) - SAFE_LEVEL_GAP;
+  return true;
+}
 
 // 허용 레벨차 allowedGap 안에서 소탕당 유효경험치(경험치×보정)가 가장 높은 토를 선택하며 시뮬레이션.
 // maxSweeps 도달 시 목표 미달이라도 중단(예산 내 도달 레벨 계산용).
@@ -192,7 +235,7 @@ function simulate(
       best = inWindow[0];
       for (const t of inWindow) {
         const gap = (t.defender as number) - level;
-        const factor = gap <= SAFE_LEVEL_GAP ? 1 : RISKY_EXP_FACTOR;
+        const factor = isFullExp(t, level) ? 1 : RISKY_EXP_FACTOR;
         const eff = t.exp * factor;
         if (eff > bestEff || (eff === bestEff && gap < chosenGap)) {
           bestEff = eff;
@@ -208,9 +251,10 @@ function simulate(
         (a.defender as number) <= (b.defender as number) ? a : b
       );
       bestGap = (best.defender as number) - level;
-      bestFactor = bestGap <= SAFE_LEVEL_GAP ? 1 : RISKY_EXP_FACTOR;
+      bestFactor = isFullExp(best, level) ? 1 : RISKY_EXP_FACTOR;
     }
-    const risky = bestGap > SAFE_LEVEL_GAP;
+    // 도전(위험) = 경험치 100%를 못 받는 상태(내 레벨 < minLevel100). 이때 경험치 70% + 전복 위험.
+    const risky = bestFactor < 1;
     return { toe: best, factor: bestFactor, risky, gap: bestGap };
   };
 
@@ -235,7 +279,7 @@ function simulate(
     }
     const key = `${toe.label}__${risky}__${factor}`;
     const entry =
-      counts.get(key) ?? { label: toe.label, count: 0, defender: toe.defender, risky, factor };
+      counts.get(key) ?? { label: toe.label, count: 0, defender: toe.defender, minLevel100: toe.minLevel100, risky, factor };
     entry.count += 1;
     counts.set(key, entry);
 
@@ -290,6 +334,7 @@ export default function LevelingPage() {
 
   const [toes, setToes] = useState<ToeRow[]>(DEFAULT_TOES);
   const [showToes, setShowToes] = useState(false);
+  const [showExpTable, setShowExpTable] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
 
   const [result, setResult] = useState<PlanResult | null>(null);
@@ -310,7 +355,16 @@ export default function LevelingPage() {
         if (typeof s.currentStamina === "string") setCurrentStamina(s.currentStamina);
         if (typeof s.omija === "string") setOmija(s.omija);
         if (typeof s.deadline === "string") setDeadline(s.deadline);
-        if (Array.isArray(s.toes)) setToes(s.toes);
+        if (Array.isArray(s.toes))
+          setToes(
+            s.toes.map((t: Partial<ToeRow> & { id: number }) => ({
+              minLevel100: "",
+              defender: "",
+              exp: "",
+              toe: "",
+              ...t,
+            }))
+          );
       }
     } catch {
       // 손상된 저장값은 무시
@@ -339,7 +393,7 @@ export default function LevelingPage() {
   const addToe = useCallback(() => {
     setToes((prev) => [
       ...prev,
-      { id: (prev.at(-1)?.id ?? 0) + 1, toe: `${prev.length + 6}토`, exp: "", defender: "" },
+      { id: (prev.at(-1)?.id ?? 0) + 1, toe: `${prev.length + 6}토`, exp: "", defender: "", minLevel100: "" },
     ]);
   }, []);
 
@@ -389,6 +443,7 @@ export default function LevelingPage() {
         label: t.toe.trim() || "토",
         exp: parseFloat(t.exp) || 0,
         defender: t.defender.trim() === "" ? null : parseInt(t.defender),
+        minLevel100: t.minLevel100.trim() === "" ? null : parseInt(t.minLevel100),
       }))
       .filter((t) => t.exp > 0);
 
@@ -524,6 +579,16 @@ export default function LevelingPage() {
     return total;
   }, [currentLevel, targetLevel, currentExp]);
 
+  // 레벨별 필요경험치 표(5→50). EXP_TABLE에 있는 값은 확정, 나머지는 선형 보간.
+  const expRows = useMemo(() => {
+    const exact = new Set(EXP_TABLE.map(([l]) => l));
+    const rows: { level: number; exp: number; exact: boolean }[] = [];
+    for (let L = 5; L <= 49; L++) {
+      rows.push({ level: L, exp: Math.round(expNeeded(L)), exact: exact.has(L) });
+    }
+    return rows;
+  }, []);
+
   return (
     <div className="text-zinc-900 dark:text-zinc-100">
       <main className="max-w-lg mx-auto px-4 py-6 space-y-5">
@@ -531,8 +596,8 @@ export default function LevelingPage() {
           <h1 className="text-lg font-bold">🎯 레벨업 플래너</h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             전쟁 발발 시각에서 역산해, 목표 레벨까지 도달하는 <b>최적 소탕 경로</b>를 계산합니다.
-            경험치 단위는 <b>만</b>. 보통 <b>내 레벨보다 높은 토</b>를 소탕하며, 수비군과의
-            <b> 레벨차가 5 이내면 100% 경험치</b>, 초과하면 <b>70% + 전복(실패) 위험</b>입니다.
+            보통 <b>내 레벨보다 높은 토</b>를 소탕하며, 각 토의
+            <b> “100% 경험치 최소레벨” 이상이면 100% 경험치</b>, 미만이면 <b>70% + 전복(실패) 위험</b>입니다.
             안전 경로는 <b>가장 가까운(레벨차 최소) 상위 토</b>만 골라 전복 위험을 최소화하고,
             마감까지 부족하면 <b>최소 위험 경로</b>를 함께 제시합니다. (최대 레벨 50)
           </p>
@@ -547,7 +612,7 @@ export default function LevelingPage() {
             <Field label="목표 레벨">
               <input type="number" className={inputClass} placeholder="예: 50" value={targetLevel} onChange={(e) => setTargetLevel(e.target.value)} />
             </Field>
-            <Field label="현재 경험치 (만)" hint="현재 레벨에서 쌓인 양">
+            <Field label="현재 경험치" hint="현재 레벨에서 쌓인 양">
               <input type="number" step="any" className={inputClass} placeholder="0" value={currentExp} onChange={(e) => setCurrentExp(e.target.value)} />
             </Field>
             <Field label="현재 체력">
@@ -571,7 +636,7 @@ export default function LevelingPage() {
 
           {previewNeeded != null && (
             <p className="text-xs text-zinc-500 dark:text-zinc-400 text-right">
-              목표까지 필요 경험치: 약 <b>{fmt(Math.round(previewNeeded))}</b>만
+              목표까지 필요 경험치: 약 <b>{fmt(Math.round(previewNeeded))}</b>
             </p>
           )}
         </div>
@@ -624,7 +689,7 @@ export default function LevelingPage() {
             {showDetail && (
               <div className="space-y-3">
                 <Section title="개요">
-                  <Row k="필요 총 경험치" v={`${fmt(Math.round(result.totalExpNeeded))}만`} />
+                  <Row k="필요 총 경험치" v={`${fmt(Math.round(result.totalExpNeeded))}`} />
                   <Row k="확보 가능 총 체력" v={`${fmt(result.budgetStamina)} (소탕 ${fmt(result.budgetSweeps)}회분)`} strong />
                 </Section>
 
@@ -648,7 +713,7 @@ export default function LevelingPage() {
                   <p className="text-[11px] text-zinc-500 dark:text-zinc-400 -mt-1">
                     → 예산 내 도달 가능:{" "}
                     <b>
-                      {result.safeReach.reachedLevel}레벨 (경험치 {fmt(Math.round(result.safeReach.reachedProgress))}만)
+                      {result.safeReach.reachedLevel}레벨 (경험치 {fmt(Math.round(result.safeReach.reachedProgress))})
                     </b>
                   </p>
                 )}
@@ -701,27 +766,75 @@ export default function LevelingPage() {
                   + 토 추가
                 </button>
               </div>
-              <div className="grid grid-cols-[1fr_1fr_1fr_2rem] gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 px-1">
+              <div className="grid grid-cols-[1fr_1fr_1fr_1fr_2rem] gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 px-1">
                 <span>토</span>
-                <span>획득경험치(만)</span>
+                <span>획득경험치</span>
                 <span>수비군 레벨</span>
+                <span>100% 경험치 최소레벨</span>
                 <span />
               </div>
               {toes.map((t) => (
-                <div key={t.id} className="grid grid-cols-[1fr_1fr_1fr_2rem] gap-2 items-center">
+                <div key={t.id} className="grid grid-cols-[1fr_1fr_1fr_1fr_2rem] gap-2 items-center">
                   <input className={inputClass} placeholder="6토" value={t.toe} onChange={(e) => updateToe(t.id, "toe", e.target.value)} />
-                  <input type="number" step="any" className={inputClass} placeholder="2" value={t.exp} onChange={(e) => updateToe(t.id, "exp", e.target.value)} />
+                  <input type="number" step="any" className={inputClass} placeholder="26000" value={t.exp} onChange={(e) => updateToe(t.id, "exp", e.target.value)} />
                   <input type="number" className={inputClass} placeholder="(선택)" value={t.defender} onChange={(e) => updateToe(t.id, "defender", e.target.value)} />
+                  <input type="number" className={inputClass} placeholder="(선택)" value={t.minLevel100} onChange={(e) => updateToe(t.id, "minLevel100", e.target.value)} />
                   <button onClick={() => removeToe(t.id)} className="text-zinc-400 hover:text-red-500 text-sm" title="삭제">
                     ✕
                   </button>
                 </div>
               ))}
               <p className="text-[11px] text-zinc-400">
-                소탕 후보는 <b>내 레벨보다 높은 토</b>입니다(동렙·이하는 제외). 레벨차가 <b>5 이내면 100% 경험치</b>,
-                5를 넘으면 <b>70% + 전복 위험</b>입니다. 안전 경로는 레벨차가 가장 작은 상위 토를 고르고, 레벨이 오르면
-                상위 토로 전환합니다. (수비군 레벨을 비워둔 토는 후보에서 제외)
+                소탕 후보는 <b>내 레벨보다 높은 토</b>입니다(동렙·이하는 제외). 내 레벨이 <b>“100% 경험치 최소레벨” 이상이면 100% 경험치</b>,
+                미만이면 <b>70% + 전복 위험</b>입니다. (100% 경험치 최소레벨을 비워두면 “수비군레벨 − 5”로 대체 계산)
+                안전 경로는 레벨차가 가장 작은 상위 토를 고르고, 레벨이 오르면 상위 토로 전환합니다.
+                (수비군 레벨을 비워둔 토는 후보에서 제외)
               </p>
+            </div>
+          )}
+        </div>
+
+        {/* 레벨별 필요 경험치 (정적 데이터 — 기본 접힘) */}
+        <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800">
+          <button
+            onClick={() => setShowExpTable((v) => !v)}
+            className="text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
+          >
+            {showExpTable ? "▼" : "▶"} 레벨별 필요 경험치 (다음 레벨까지)
+            {!showExpTable && <span> · 참고용</span>}
+          </button>
+          {showExpTable && (
+            <div className="mt-2 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+              <p className="text-[11px] text-zinc-400 mb-2">
+                각 레벨에서 <b>다음 레벨</b>까지 필요한 경험치입니다. <b>*</b> 표시는 확정 데이터,
+                나머지는 선형 보간 추정값입니다.
+              </p>
+              <div className="overflow-hidden rounded border border-zinc-200 dark:border-zinc-700">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
+                      <th className="text-left font-medium px-2 py-1.5">레벨</th>
+                      <th className="text-right font-medium px-2 py-1.5">다음 레벨 필요 경험치</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {expRows.map((r) => (
+                      <tr
+                        key={r.level}
+                        className="border-t border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200"
+                      >
+                        <td className="px-2 py-1">
+                          {r.level} → {r.level + 1}
+                        </td>
+                        <td className="px-2 py-1 text-right tabular-nums">
+                          {fmt(r.exp)}
+                          {r.exact && <span className="text-amber-500"> *</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
@@ -799,6 +912,7 @@ function RecommendedSummary({
               <span className={`inline-block w-2.5 h-2.5 rounded-full ${b.risky ? "bg-red-500" : TOE_COLORS[i % TOE_COLORS.length]}`} />
               {b.label}
               {b.defender != null && <span className="text-zinc-400"> 수비군 {b.defender}</span>}
+              {b.minLevel100 != null && <span className="text-zinc-400"> · 100%경험치 {b.minLevel100}렙</span>}
               {b.risky && <span className="text-red-500"> ⚠️70%</span>}
             </span>
             <span className="font-medium text-zinc-800 dark:text-zinc-200">{fmt(b.count)}회</span>
@@ -859,6 +973,7 @@ function PathSection({
             <span>
               {b.label}
               {b.defender != null && <span className={b.risky ? "" : "text-zinc-400"}> (수비군 {b.defender})</span>}
+              {b.minLevel100 != null && <span className={b.risky ? "" : "text-zinc-400"}> (100%경험치 {b.minLevel100}렙)</span>}
               {b.risky ? ` ⚠️도전${b.factor < 1 ? " 70%" : ""}` : ""}
             </span>
             <span className="font-medium">{fmt(b.count)}회</span>
@@ -867,12 +982,12 @@ function PathSection({
       </div>
       {emphasizeRisk && sim.hasRisky ? (
         <p className="text-[11px] text-red-500 pt-1">
-          ⚠️ 도전 표시 소탕은 레벨차가 5를 초과해 전복(실패) 위험이 있고 경험치도 70%입니다.
+          ⚠️ 도전 표시 소탕은 내 레벨이 해당 토의 “100% 경험치 최소레벨”에 못 미쳐 경험치 70% + 전복(실패) 위험이 있습니다.
           위험 소탕 {fmt(sim.riskySweeps)}회 · 최대 레벨차 {sim.maxGapUsed}.
         </p>
       ) : !sim.hasRisky ? (
         <p className="text-[11px] text-zinc-500 dark:text-zinc-400 pt-1">
-          모든 소탕이 레벨차 5 이내(100% 경험치)입니다. 레벨이 오르면 상위 토로 전환합니다.
+          모든 소탕이 100% 경험치 구간입니다. 레벨이 오르면 상위 토로 전환합니다.
         </p>
       ) : null}
     </Section>

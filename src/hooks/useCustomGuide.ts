@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { GuideStepRaw } from "@/types/guide";
 import { TierValuesMap, CommonValuesMap } from "@/data/tier-config";
+import { getActiveSeason } from "@/data/season";
 
 const TEMP_STEPS_KEY = "s2-temp-guide-steps";
 const TEMP_TIER_VALUES_KEY = "s2-temp-guide-tier-values";
@@ -44,10 +45,10 @@ export function useCustomGuide(
 
   const [loaded, setLoaded] = useState(false);
 
-  // Fetch latest default data from server
+  // Fetch latest default data from server (season-aware)
   const fetchServerData = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/guide");
+      const res = await fetch(`/api/admin/guide?season=${getActiveSeason()}`);
       if (res.ok) {
         const data = await res.json();
         setServerSteps(data.steps);
