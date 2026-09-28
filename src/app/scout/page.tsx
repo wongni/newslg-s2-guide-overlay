@@ -5,6 +5,7 @@ import { ScoutGate } from "@/components/scout/ScoutGate";
 import { MyDeckSettingsPanel } from "@/components/scout/MyDeckSettingsPanel";
 import { ScoutSearch } from "@/components/scout/ScoutSearch";
 import { GeneralFilter } from "@/components/scout/GeneralFilter";
+import { ThreatRanking } from "@/components/scout/ThreatRanking";
 import { EnemyEditor } from "@/components/scout/EnemyEditor";
 import { EnemyList } from "@/components/scout/EnemyList";
 import { useMyDeck } from "@/hooks/useMyDeck";
@@ -79,68 +80,89 @@ export default function ScoutPage() {
   }
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6 space-y-4 text-zinc-900 dark:text-zinc-100">
-      <div className="flex items-center justify-between">
+    <main className="max-w-6xl mx-auto px-4 py-6 text-zinc-900 dark:text-zinc-100">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-lg font-bold">🕵️ 적 정찰</h1>
         {scout.loading && <span className="text-xs text-zinc-400">동기화 중...</span>}
       </div>
 
-      {hydrated && (
-        <MyDeckSettingsPanel
-          settings={settings}
-          onSetArmy={setArmy}
-          loggedIn={Boolean(user)}
-        />
-      )}
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6 lg:items-start">
+        {/* 메인 컬럼 */}
+        <div className="space-y-4">
+          {hydrated && (
+            <MyDeckSettingsPanel
+              settings={settings}
+              onSetArmy={setArmy}
+              loggedIn={Boolean(user)}
+            />
+          )}
 
-      {/* 최상단: 적 검색 → 기존 적은 아래 목록 필터, 새 이름은 추가 */}
-      <ScoutSearch
-        players={scout.data.players}
-        onSelectExisting={(p) => setSearchQuery(p.name)}
-        onAddNew={(name) => setEditor({ mode: "new", name })}
-        onQueryChange={setSearchQuery}
-      />
-
-      {/* 장수 필터: 선택한 장수가 덱에 포함된 적만 표시 */}
-      <GeneralFilter
-        selected={generalFilter}
-        onToggle={toggleGeneral}
-        onClear={() => setGeneralFilter(new Set())}
-      />
-
-      {/* 편집기 (검색으로 열림) */}
-      {editor.mode !== "closed" && (
-        <div ref={editorRef} className="scroll-mt-20">
-          <EnemyEditor
-            name={editor.mode === "new" ? editor.name : editor.player.name}
-            initial={editor.mode === "edit" ? editor.player : null}
-            decks={scout.data.decks}
-            onFindOrCreateDeck={scout.findOrCreateDeck}
-            onSave={handleSave}
-            onCancel={() => setEditor({ mode: "closed" })}
+          {/* 최상단: 적 검색 → 기존 적은 아래 목록 필터, 새 이름은 추가 */}
+          <ScoutSearch
+            players={scout.data.players}
+            onSelectExisting={(p) => setSearchQuery(p.name)}
+            onAddNew={(name) => setEditor({ mode: "new", name })}
+            onQueryChange={setSearchQuery}
           />
+
+          {/* 장수 필터: 선택한 장수가 덱에 포함된 적만 표시 */}
+          <GeneralFilter
+            selected={generalFilter}
+            onToggle={toggleGeneral}
+            onClear={() => setGeneralFilter(new Set())}
+          />
+
+          {/* 요주의 랭킹 (모바일 전용: 필터 아래). 데스크톱은 우측 사이드바에 표시. */}
+          <div className="lg:hidden">
+            <ThreatRanking
+              players={scout.data.players}
+              onSelect={(name) => setSearchQuery(name)}
+            />
+          </div>
+
+          {/* 편집기 (검색으로 열림) */}
+          {editor.mode !== "closed" && (
+            <div ref={editorRef} className="scroll-mt-20">
+              <EnemyEditor
+                name={editor.mode === "new" ? editor.name : editor.player.name}
+                initial={editor.mode === "edit" ? editor.player : null}
+                decks={scout.data.decks}
+                onFindOrCreateDeck={scout.findOrCreateDeck}
+                onSave={handleSave}
+                onCancel={() => setEditor({ mode: "closed" })}
+              />
+            </div>
+          )}
+
+          {scout.error && (
+            <p className="text-xs text-red-600 dark:text-red-400">{scout.error}</p>
+          )}
+
+          <EnemyList
+            players={scout.data.players}
+            decks={scout.data.decks}
+            myDecks={settings.decks}
+            filter={searchQuery}
+            generalFilter={generalFilter}
+            onEdit={(p) => setEditor({ mode: "edit", player: p })}
+            onDeletePlayer={scout.deletePlayer}
+          />
+
+          <p className="text-[10px] text-zinc-400 dark:text-zinc-500 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+            판정: 내 부대(공격) vs 적 덱(방어). 카운터=유리, 비등=호각, 미러=동일,
+            회피=불리. 병종/강화 단계는 표시·추측용이며 덱 상성 판정에는 반영되지
+            않습니다. 병종 순환상성: 방패▶궁▶창▶기▶방패.
+          </p>
         </div>
-      )}
 
-      {scout.error && (
-        <p className="text-xs text-red-600 dark:text-red-400">{scout.error}</p>
-      )}
-
-      <EnemyList
-        players={scout.data.players}
-        decks={scout.data.decks}
-        myDecks={settings.decks}
-        filter={searchQuery}
-        generalFilter={generalFilter}
-        onEdit={(p) => setEditor({ mode: "edit", player: p })}
-        onDeletePlayer={scout.deletePlayer}
-      />
-
-      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 pt-2 border-t border-zinc-200 dark:border-zinc-800">
-        판정: 내 부대(공격) vs 적 덱(방어). 카운터=유리, 비등=호각, 미러=동일,
-        회피=불리. 병종/강화 단계는 표시·추측용이며 덱 상성 판정에는 반영되지
-        않습니다. 병종 순환상성: 방패▶궁▶창▶기▶방패.
-      </p>
+        {/* 우측 사이드바 (데스크톱 전용): 요주의 랭킹 — 스크롤 시 상단 고정 */}
+        <aside className="hidden lg:block lg:sticky lg:top-20">
+          <ThreatRanking
+            players={scout.data.players}
+            onSelect={(name) => setSearchQuery(name)}
+          />
+        </aside>
+      </div>
     </main>
   );
 }
