@@ -58,12 +58,22 @@ if [ -f ~/backup-data.sh ]; then
   mkdir -p /root/bin
   mv -f ~/backup-data.sh /root/bin/backup-data.sh
   chmod +x /root/bin/backup-data.sh
-  # Idempotent cron entry: hourly snapshot of /root/s2-data -> /root/s2-backups
+  # Idempotent cron entry: hourly snapshot of /root/s2-data -> /root/s2-backups.
+  # Build via a temp file (robust under `set -e`; piping `crontab -l | grep`
+  # fails when the crontab is empty because grep returns exit 1).
   CRON_CMD="/root/bin/backup-data.sh /root/s2-data /root/s2-backups 168 >> /root/s2-backup.log 2>&1"
   CRON_LINE="0 * * * * $CRON_CMD"
-  # Remove any prior entry for this script, then add the current one.
-  ( crontab -l 2>/dev/null | grep -v 'backup-data.sh' ; echo "$CRON_LINE" ) | crontab -
-  echo "    Cron installed: hourly backup to /root/s2-backups"
+  TMP_CRON="$(mktemp)"
+  # Preserve any existing entries except our own, then append the current one.
+  crontab -l 2>/dev/null | grep -v 'backup-data.sh' > "$TMP_CRON" || true
+  echo "$CRON_LINE" >> "$TMP_CRON"
+  crontab "$TMP_CRON"
+  rm -f "$TMP_CRON"
+  if crontab -l 2>/dev/null | grep -q 'backup-data.sh'; then
+    echo "    Cron installed: hourly backup to /root/s2-backups"
+  else
+    echo "    WARNING: cron registration could not be verified."
+  fi
   # Take one immediate backup so we always have a baseline.
   /root/bin/backup-data.sh /root/s2-data /root/s2-backups 168 >> /root/s2-backup.log 2>&1 || true
 else
