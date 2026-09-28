@@ -74,6 +74,28 @@ export interface SourceLink {
   url: string;
 }
 
+/** 개척 부대(덱)의 장수 1명. */
+export interface PioneerDeckGeneral {
+  /** 장수 이름. 예: "SP 제갈량". */
+  name: string;
+  /** 레벨(선택). 예: 50. */
+  level?: number;
+  /** 전법 목록(선택). 예: ["연전연승", "허점 공략"]. */
+  tactics?: string[];
+}
+
+/** 개척 부대(덱) 하나. 예: 개척2덱. */
+export interface PioneerDeck {
+  /** 부대 라벨. 예: "개척2". */
+  label: string;
+  /** 진형(선택). 예: "기형진", "안형진". */
+  formation?: string;
+  /** 장수 구성(보통 3명). */
+  generals: PioneerDeckGeneral[];
+  /** 운영 팁(선택). 스탯 배분·전법 교체 등. */
+  tips?: string[];
+}
+
 /** 저돌파/고돌파 공통 데이터(알아두기·규칙·표). tracking-common.json. */
 export interface TrackingCommon {
   /** 목적/개요 설명 문단(알아두기). */
@@ -88,6 +110,8 @@ export interface TrackingCommon {
   landExp?: LandExpEntry[];
   /** 부록 A: 누적 경험치선(선택). */
   cumulativeExp?: CumulativeExpEntry[];
+  /** 개척 부대(덱) 구성(선택). 저돌파/고돌파 공용. */
+  decks?: PioneerDeck[];
   /** 출처/참고 자료(선택). */
   sources?: SourceLink[];
 }
@@ -118,6 +142,8 @@ export interface TrackingData {
   rows: TrackingRow[];
   /** 부록 A: 누적 경험치선(선택). */
   cumulativeExp?: CumulativeExpEntry[];
+  /** 개척 부대(덱) 구성(선택). */
+  decks?: PioneerDeck[];
   /** 출처/참고 자료(선택). */
   sources?: SourceLink[];
 }

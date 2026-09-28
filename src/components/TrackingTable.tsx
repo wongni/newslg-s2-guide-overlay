@@ -413,6 +413,74 @@ export function TrackingTable({
           </div>
         )}
 
+        {/* 개척 부대(덱) 구성 */}
+        {data.decks && data.decks.length > 0 && (
+          <div className="p-3 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+            <div className="text-sm font-semibold mb-2">🎴 개척 부대 구성</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              {data.decks.map((deck) => (
+                <div
+                  key={deck.label}
+                  className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-2.5"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span
+                      className={`text-sm font-bold ${
+                        UNIT_TAG_STYLE[deck.label.match(/^개척[0-9]/)?.[0] ?? deck.label] ??
+                        "text-zinc-700 dark:text-zinc-200"
+                      }`}
+                    >
+                      {deck.label}
+                    </span>
+                    {deck.formation && (
+                      <span className="text-[11px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                        {deck.formation}
+                      </span>
+                    )}
+                  </div>
+                  <ul className="space-y-1">
+                    {deck.generals.map((g, gi) => (
+                      <li key={gi} className="text-xs">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="font-semibold text-zinc-800 dark:text-zinc-100">
+                            {g.name}
+                          </span>
+                          {g.level !== undefined && (
+                            <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">
+                              Lv{g.level}
+                            </span>
+                          )}
+                        </div>
+                        {g.tactics && g.tactics.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-0.5">
+                            {g.tactics.map((t, ti) => (
+                              <span
+                                key={ti}
+                                className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  {deck.tips && deck.tips.length > 0 && (
+                    <ul className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-1 text-[11px] text-zinc-600 dark:text-zinc-400 list-disc list-inside">
+                      {deck.tips.map((t, ti) => (
+                        <li key={ti} className="leading-snug">
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 토지 레벨별 경험치 표 */}
         {data.landExp && data.landExp.length > 0 && (
           <div className="p-3 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
