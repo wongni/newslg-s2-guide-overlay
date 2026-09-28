@@ -68,6 +68,9 @@ if ($LASTEXITCODE -ne 0) { throw "Script upload failed" }
 scp scripts/edge-bootstrap.sh "${REMOTE}:~/edge-bootstrap.sh"
 if ($LASTEXITCODE -ne 0) { throw "Bootstrap upload failed" }
 
+scp scripts/backup-data.sh "${REMOTE}:~/backup-data.sh"
+if ($LASTEXITCODE -ne 0) { throw "Backup script upload failed" }
+
 # ============================================================
 # 3. Execute remote setup
 # ============================================================

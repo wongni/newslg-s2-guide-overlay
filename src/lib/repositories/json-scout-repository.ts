@@ -32,7 +32,9 @@ export class JsonScoutRepository implements ScoutRepository {
   }
 
   private async save(data: ScoutData): Promise<void> {
-    await writeJsonFile(SCOUT_FILE, data);
+    // 정찰 데이터는 패스코드만 알면 누구나 수정 가능하므로,
+    // 저장 직전 상태를 항상 백업해 악의적 삭제/오염 시 복구할 수 있게 한다.
+    await writeJsonFile(SCOUT_FILE, data, { backup: true, maxBackups: 300 });
   }
 
   async getAll(): Promise<ScoutData> {

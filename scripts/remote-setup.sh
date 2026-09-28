@@ -52,6 +52,24 @@ docker run -d \
 
 echo '>>> [3/4] Firewall: leaving DOCKER-USER untouched...'
 # This container no longer publishes a host port, so it needs no firewall rule.
+# Install/refresh periodic data backup (cron)
+echo '>>> [3b] Installing periodic data backup...'
+if [ -f ~/backup-data.sh ]; then
+  mkdir -p /root/bin
+  mv -f ~/backup-data.sh /root/bin/backup-data.sh
+  chmod +x /root/bin/backup-data.sh
+  # Idempotent cron entry: hourly snapshot of /root/s2-data -> /root/s2-backups
+  CRON_CMD="/root/bin/backup-data.sh /root/s2-data /root/s2-backups 168 >> /root/s2-backup.log 2>&1"
+  CRON_LINE="0 * * * * $CRON_CMD"
+  # Remove any prior entry for this script, then add the current one.
+  ( crontab -l 2>/dev/null | grep -v 'backup-data.sh' ; echo "$CRON_LINE" ) | crontab -
+  echo "    Cron installed: hourly backup to /root/s2-backups"
+  # Take one immediate backup so we always have a baseline.
+  /root/bin/backup-data.sh /root/s2-data /root/s2-backups 168 >> /root/s2-backup.log 2>&1 || true
+else
+  echo '    WARNING: backup-data.sh not uploaded; skipping backup setup.'
+fi
+
 # The shared proxy owns :80 and manages the Cloudflare-only allowlist; do NOT
 # flush DOCKER-USER here or it would wipe the proxy's rules.
 if ! docker ps --filter 'name=edge-caddy' --filter 'status=running' | grep -q edge-caddy; then
