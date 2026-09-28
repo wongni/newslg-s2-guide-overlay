@@ -49,7 +49,7 @@ if ($sshTestResult -eq "ok") {
 # 1. Create source archive
 # ============================================================
 Write-Host "`n[1/4] Creating source archive..." -ForegroundColor Cyan
-tar -czf deploy.tar.gz --exclude=node_modules --exclude=.next --exclude=.git --exclude=deploy.tar.gz .
+tar -czf deploy.tar.gz --exclude=node_modules --exclude=.next --exclude=.git --exclude=deploy.tar.gz --exclude=./kb --exclude=./tools --exclude=./docs --exclude=./images .
 
 # ============================================================
 # 2. Upload to server
