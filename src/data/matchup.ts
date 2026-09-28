@@ -22,3 +22,12 @@ export const DECK_SLUG: Record<TeamName, string | null> =
 export const DECK_BASE_URL = active.DECK_BASE_URL;
 export const MATCHUP_MATRIX = active.MATCHUP_MATRIX;
 export const deckUrl = active.deckUrl as (team: TeamName) => string | null;
+
+// 표시용 라벨 맵. 활성 시즌에 없으면 키를 그대로 라벨로 사용.
+export const TEAM_DISPLAY: Record<TeamName, string> =
+  (active as { TEAM_DISPLAY?: Record<string, string> }).TEAM_DISPLAY ?? {};
+
+// 표준 덱 키 → 표시 라벨 (없으면 키 그대로)
+export function teamLabel(team: TeamName): string {
+  return TEAM_DISPLAY[team] ?? team;
+}

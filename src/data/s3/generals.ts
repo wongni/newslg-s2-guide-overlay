@@ -100,6 +100,32 @@ export const TEAM_GENERALS: Record<TeamName, string[]> = {
   조순이: ["조조", "순욱", "왕이"],
 };
 
+// ---------------------------------------------------------------------------
+// 전법(덱) 프리셋 — 게임 내 "전법 목록" 화면 표기 기준
+// ---------------------------------------------------------------------------
+// 게임 화면에는 표준 상성표 이름과 다른 별칭으로 전법이 표기되기도 하고,
+// 장수도 표시명(예: "원소"=연의 원소, "조인"=연의 조인)으로 나온다.
+// 여기서는 화면에 보이는 그대로의 이름/장수를 보존하되, 상성 판정을 위해
+// 표준 덱(TeamName)에 연결한다. (displayGenerals = 화면 표기, team = 표준 덱)
+export interface DeckPreset {
+  name: string; // 게임 화면에 보이는 전법 이름
+  team: TeamName; // 대응하는 표준 상성 덱
+  displayGenerals: string[]; // 화면에 보이는 장수 표기 그대로
+  category?: string; // 상위 분류 헤더 (예: "추격계열")
+}
+
+// 출처: 게임 내 전법 목록 화면 캡처 (시즌3 업주산하)
+export const DECK_PRESETS: DeckPreset[] = [
+  { name: "월량마", team: "월량마", displayGenerals: ["마초", "SP 제갈량", "악진"] },
+  { name: "안공 신화창", team: "안공신화", displayGenerals: ["강유", "유비", "SP 제갈량"] },
+  { name: "원손육", team: "원손육", displayGenerals: ["원소", "손권", "육손"] },
+  { name: "인왕창", team: "인왕창", displayGenerals: ["조조", "전위", "조인"], category: "추격계열" },
+  { name: "좌공관", team: "좌공관", displayGenerals: ["좌자", "공손찬", "관우"], category: "추격계열" },
+  { name: "조감강", team: "조감강", displayGenerals: ["조운", "감부인", "강유"], category: "추격계열" },
+  { name: "준숭술", team: "대한방패", displayGenerals: ["주준", "황보숭", "원술"], category: "추격계열" },
+  { name: "조순이", team: "조순이", displayGenerals: ["조조", "순욱", "왕이"], category: "추격계열" },
+];
+
 // 보유 장수 집합으로 특정 조합을 조립 가능한지 판정
 export function canBuildTeam(
   team: TeamName,

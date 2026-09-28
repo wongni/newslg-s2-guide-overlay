@@ -39,6 +39,21 @@ export const TEAMS = [
 
 export type TeamName = (typeof TEAMS)[number];
 
+// 상성표/화면에 보이는 표시용 라벨.
+// 내부 키(TeamName)는 상성 로직·별칭·다른 페이지에서 그대로 쓰이므로 바꾸지 않고,
+// 게임 내 전법 목록 표기(스샷 기준)에 맞춘 표시 이름만 여기서 매핑한다.
+export const TEAM_DISPLAY: Record<TeamName, string> = {
+  월량마: "월량마",
+  안공신화: "안공 신화창",
+  원손육: "원손육",
+  추격체계: "추격체계",
+  인왕창: "인왕창",
+  좌공관: "좌공관",
+  조감강: "조감강",
+  대한방패: "준숭술",
+  조순이: "조순이",
+};
+
 // 상성표 조합명 → cheonha-deck.xyz 덱 slug 매핑
 // (시즌3 덱 페이지 slug는 미확인 → 모두 null로 두어 링크 비활성화)
 export const DECK_SLUG: Record<TeamName, string | null> = {

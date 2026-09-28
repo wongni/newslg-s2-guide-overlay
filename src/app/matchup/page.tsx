@@ -6,10 +6,11 @@ import {
   MATCHUP_MATRIX,
   MATCHUP_META,
   deckUrl,
+  teamLabel,
   type MatchupResult,
   type TeamName,
 } from "@/data/matchup";
-import { TEAM_GENERALS, canBuildTeam, missingGenerals } from "@/data/generals";
+import { TEAM_GENERALS, DECK_PRESETS, canBuildTeam, missingGenerals } from "@/data/generals";
 import { useOwnedGenerals } from "@/hooks/useOwnedGenerals";
 import { GeneralSelector } from "@/components/GeneralSelector";
 
@@ -24,9 +25,10 @@ function CellContent({ result }: { result: MatchupResult }) {
 
 // 조합명 + 덱 정보 링크 (클릭 시 새 탭으로 원본 사이트 열기)
 function TeamHeaderName({ team }: { team: TeamName }) {
+  const label = teamLabel(team);
   const url = deckUrl(team);
   if (!url) {
-    return <span>{team}</span>;
+    return <span>{label}</span>;
   }
   return (
     <a
@@ -35,9 +37,9 @@ function TeamHeaderName({ team }: { team: TeamName }) {
       rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()} // 하이라이트 토글과 분리
       className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400 hover:underline"
-      title={`${team} 덱 정보 보기 (새 탭)`}
+      title={`${label} 덱 정보 보기 (새 탭)`}
     >
-      {team}
+      {label}
       <span className="text-[9px] opacity-70">↗</span>
     </a>
   );
@@ -123,7 +125,7 @@ export default function MatchupPage() {
                     key={t}
                     className="px-2 py-0.5 rounded bg-emerald-600 text-white font-medium"
                   >
-                    {t}
+                    {teamLabel(t)}
                   </span>
                 ))}
               </span>
@@ -270,7 +272,7 @@ export default function MatchupPage() {
                             : ""
                         }`}
                         style={{ backgroundColor: meta.bg, color: meta.text }}
-                        title={`${attacker}(공) vs ${TEAMS[ci]}(방) = ${meta.label}`}
+                        title={`${teamLabel(attacker)}(공) vs ${teamLabel(TEAMS[ci])}(방) = ${meta.label}`}
                       >
                         <CellContent result={result} />
                       </td>
@@ -306,6 +308,50 @@ export default function MatchupPage() {
           </p>
           <p>• 대각선(자기 자신)은 비등으로 처리하며 승무패·총점 계산에서 제외됩니다</p>
         </div>
+
+        {/* 전법(덱) 목록 — 이름 + 장수 구성 (게임 내 전법 목록 기준) */}
+        {DECK_PRESETS.length > 0 && (
+          <section className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+            <h2 className="text-sm font-bold">📋 전법 목록 (장수 구성)</h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              게임 내 전법 목록 표기 기준입니다. 각 전법의 구성 장수를 함께 표시합니다.
+            </p>
+            <ul className="flex flex-col gap-1.5">
+              {DECK_PRESETS.map((preset, i) => {
+                const prev = DECK_PRESETS[i - 1];
+                const showCategory =
+                  preset.category && preset.category !== prev?.category;
+                const buildable = owned.size > 0 && canBuildTeam(preset.team, owned);
+                return (
+                  <li key={`${preset.name}-${preset.team}`} className="contents">
+                    {showCategory && (
+                      <div className="mt-2 mb-0.5 text-center text-sm font-extrabold text-zinc-700 dark:text-zinc-200">
+                        {preset.category}
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+                      <div className="min-w-0 text-center flex-1">
+                        <div className="flex items-center justify-center gap-1.5">
+                          {buildable && (
+                            <span className="text-emerald-600 dark:text-emerald-400" aria-label="조립 가능">
+                              ✓
+                            </span>
+                          )}
+                          <span className="font-bold text-sm text-zinc-800 dark:text-zinc-100">
+                            {preset.name}
+                          </span>
+                        </div>
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                          ({preset.displayGenerals.join(", ")})
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
       </main>
     </div>
   );
