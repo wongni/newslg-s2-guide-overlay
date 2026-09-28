@@ -35,7 +35,8 @@ const OMIJA_GIFT_HOUR = 8; // 매일 오전 8시에 1개 선물
 const SAFE_LEVEL_GAP = 5; // (수비군레벨 - 내레벨)이 이 값 이하면 경험치 100%, 초과면 70%
 const RISKY_EXP_FACTOR = 0.7; // 레벨차 5 초과 도전 시 획득 경험치 비율
 
-// 레벨 L → L+1 필요경험치 (경험치 값). 5~34는 확정 데이터(docs/level-exp.md), 그 위는 관측값 기반 외삽/보간.
+// 레벨 L → L+1 필요경험치 (경험치 값). 5~49 전 구간 확정 데이터(docs/level-exp.md).
+// 49 → 50이 최종 레벨업(최대 레벨 50)이며, 모든 값이 확정이라 보간이 필요 없다.
 const EXP_TABLE: [number, number][] = [
   [5, 2000],
   [6, 3000],
@@ -67,11 +68,21 @@ const EXP_TABLE: [number, number][] = [
   [32, 480000],
   [33, 536000],
   [34, 596000],
+  [35, 720000],
+  [36, 840000],
+  [37, 960000],
   [38, 1080000],
+  [39, 1200000],
+  [40, 1500000],
+  [41, 1800000],
+  [42, 2100000],
   [43, 2400000],
   [44, 2700000],
   [45, 3000000],
   [46, 3300000],
+  [47, 3600000],
+  [48, 4000000],
+  [49, 4500000],
 ];
 
 function expNeeded(level: number): number {
@@ -579,12 +590,11 @@ export default function LevelingPage() {
     return total;
   }, [currentLevel, targetLevel, currentExp]);
 
-  // 레벨별 필요경험치 표(5→50). EXP_TABLE에 있는 값은 확정, 나머지는 선형 보간.
+  // 레벨별 필요경험치 표(5→49). 전 구간 확정 데이터(docs/level-exp.md).
   const expRows = useMemo(() => {
-    const exact = new Set(EXP_TABLE.map(([l]) => l));
-    const rows: { level: number; exp: number; exact: boolean }[] = [];
+    const rows: { level: number; exp: number }[] = [];
     for (let L = 5; L <= 49; L++) {
-      rows.push({ level: L, exp: Math.round(expNeeded(L)), exact: exact.has(L) });
+      rows.push({ level: L, exp: Math.round(expNeeded(L)) });
     }
     return rows;
   }, []);
@@ -806,8 +816,7 @@ export default function LevelingPage() {
           {showExpTable && (
             <div className="mt-2 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
               <p className="text-[11px] text-zinc-400 mb-2">
-                각 레벨에서 <b>다음 레벨</b>까지 필요한 경험치입니다. <b>*</b> 표시는 확정 데이터,
-                나머지는 선형 보간 추정값입니다.
+                각 레벨에서 <b>다음 레벨</b>까지 필요한 경험치입니다. (5~49 전 구간 확정 데이터)
               </p>
               <div className="overflow-hidden rounded border border-zinc-200 dark:border-zinc-700">
                 <table className="w-full text-xs">
@@ -828,7 +837,6 @@ export default function LevelingPage() {
                         </td>
                         <td className="px-2 py-1 text-right tabular-nums">
                           {fmt(r.exp)}
-                          {r.exact && <span className="text-amber-500"> *</span>}
                         </td>
                       </tr>
                     ))}
