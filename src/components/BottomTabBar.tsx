@@ -6,7 +6,7 @@ import { TAB_ROUTES } from "./AppShell";
 
 function isActiveTab(pathname: string, tabPath: string): boolean {
   if (tabPath === "/") return pathname === "/";
-  return pathname.startsWith(tabPath);
+  return pathname === tabPath || pathname.startsWith(tabPath + "/");
 }
 
 interface BottomTabBarProps {

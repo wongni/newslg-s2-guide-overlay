@@ -1,0 +1,371 @@
+{
+  "intro": [
+    "시즌 시작 후 4시간 동안은 체력 회복과 자원 생산이 되지 않음. 따라서 천천히 진행해도 무방",
+    "내성 개간 시 전투 돌입 직후 출성했다가 다시 들어오면 전투가 바로 끝남",
+    "자원이 조금 모자란다 싶으면 군사 훈련을 1회 실패 시까지 도전해서 자원 수급",
+    "군사 훈련 직후 직업 메뉴에서 특성을 찍을 수 있는지 확인. 자원 수급에 도움이 되는 특성 위주로 찍되, 개척에 필요한 특성을 우선으로 찍기",
+    "외성 군량 점령 최소화",
+    "철목석 생산 비율 1:1:1.5 이상적. 자원상자로 불균형 해소 어느 정도 가능하므로 필수는 아님",
+    "10렙 달성 시 전법 배우고 레벨 평준화",
+    "15렙 달성 시 영웅 무기/탈 것 장착",
+    "20렙 달성 시 전법 배우고 레벨 평준화",
+    "25렙 달성 시 병법 1 해금",
+    "30렙 달성 시 전설/절세 무기/탈 것 장착, 병법 2 해금",
+    "35렙 달성 시 병법 3/재연구 해금, 병종 교체 해금",
+    "40렙 달성 시 병종 정통 해금"
+  ],
+  "prep": [
+    {
+      "heading": "시즌 상점에서 구매",
+      "items": [
+        "동전 모두",
+        "예비병 모두",
+        "병부 모두",
+        "책서 모두",
+        "랜덤 영웅 장비 ×1",
+        "랜덤 영웅 탈 것 ×1"
+      ]
+    },
+    {
+      "heading": "일일 상점에서 구매",
+      "items": [
+        "황금과 쌀로 사는 동전만 모두 구매"
+      ]
+    },
+    {
+      "heading": "뽑기 진행",
+      "items": [
+        "카드팩 2에서 강유와 침략방어를 얻을 때까지 뽑기",
+        "카드팩 1에서 좌자·마등·SP제갈량 셋 중 둘이 나올 때까지 뽑기",
+        "300뽑 선택권으로 셋 중 나오지 않은 장수 뽑기 (SP제갈량 최우선)",
+        "제외카드 추천 — 팩1: 장소/경천위지, 팩2: 보연사/십면매복"
+      ]
+    }
+  ],
+  "startState": [
+    "개간지: Lv1×4 (4/4) — 한도 4",
+    "점령지: (0/10) — 영지 한도 10",
+    "개척1 / 개척2 / 개척3: 각 체력 200 · 레벨 5.0",
+    "10장까지 체력 자연회복 없음 (닭다리만 +60/부대)"
+  ],
+  "rules": [
+    {
+      "heading": "1. 게임 메커니즘",
+      "items": [
+        "개간: LvN 개간지를 개간하면 → LvN+1 수비군과 전투 → 개간지가 LvN+1이 됨. '대상'은 개간 전(입력) 레벨 기준. 획득 경험치는 결과(LvN+1) 토지값.",
+        "점령: LvN 외성토지를 점령하면 → LvN 수비군과 전투 → LvN 토지 획득. 경험치 = LvN 토지값.",
+        "소탕: 이미 점령한 토지를 전투만 해서 경험치만 얻음. 영지·개간지 수 변화 없음.",
+        "둔전: 자원만 획득. 부대 경험치·체력 변화 없음."
+      ]
+    },
+    {
+      "heading": "2. 경험치 → 소수점 레벨 계산 (실수 잦은 부분)",
+      "items": [
+        "각 부대의 경험치는 누적으로 관리. 행마다 독립 계산하지 말 것.",
+        "레벨 = 정수레벨 + (누적경험치 − 그 레벨 도달 누적선) / 다음 레벨 필요경험치.",
+        "20레벨 도달선은 270000 (230000 아님 — 과거 반복된 오류).",
+        "70% 규칙: 부대 레벨 < 토지의 '100% 최소 부대레벨'이면 획득 경험치 ×0.7. Lv6→19렙, Lv7→24렙, Lv8→29렙 이상이면 전액."
+      ]
+    },
+    {
+      "heading": "3. 체력 소모 규칙 (결과 토지 레벨 기준)",
+      "items": [
+        "결과 Lv3 이하 = 10 소모, 결과 Lv4 이상 = 20 소모.",
+        "닭다리: 부대당 +60. 챕터 완료로 획득(2~7장 각 2, 8·9장 3, 10장 4). 사용 시 닭다리 −1, 체력 +60.",
+        "닭다리는 체력이 0 이하로 떨어지기 직전에 최소 개수만 배치해 계산.",
+        "10장까지 자연회복 없음. 4시간 경과 후부터 자연회복 시간당 20(3분당 1) + 자원 생산 시작."
+      ]
+    },
+    {
+      "heading": "4. 부대 재편성",
+      "items": [
+        "전법 초기화·퇴진·교체 시에도 레벨(누적 경험치)과 체력은 유지된다.",
+        "단, '5레벨/체력200 새 장수 편성'처럼 명시적으로 새 장수를 넣으면 5.0/200으로 리셋."
+      ]
+    },
+    {
+      "heading": "5. 한도 증가",
+      "items": [
+        "개간지 한도 +2: 챕터 완료 보상. 신규 개간지는 기존 개간지의 최소 레벨로 생성(추정).",
+        "영지(점령) 한도: 번영도 퀘스트로 증가 — 6장 번영4500 +2(→12), 7장 번영10000 +2(→14), 8장 번영15000 +3(→17), 10장 번영20000 +3(→20)."
+      ]
+    },
+    {
+      "heading": "6. 표 작성 원칙",
+      "items": [
+        "한 부대가 움직인 행은 그 부대 값만 기입, 나머지는 '-'(변화 없음).",
+        "현황 LvX×N 개수 합 = 사용량, 사용량 ≤ 한도.",
+        "행을 중간에 끼우면 이후 같은 부대의 누적 경험치·체력·닭다리가 전부 밀리므로 연쇄 재계산 필요.",
+        "값 수정 후에는 개간지·점령지 개수 합과 한도를 검산."
+      ]
+    }
+  ],
+  "landExp": [
+    {
+      "landLevel": 2,
+      "fullExpMinLevel": 5,
+      "guardLevel": 3,
+      "exp": 2560
+    },
+    {
+      "landLevel": 3,
+      "fullExpMinLevel": 5,
+      "guardLevel": 10,
+      "exp": 2800
+    },
+    {
+      "landLevel": 4,
+      "fullExpMinLevel": 5,
+      "guardLevel": 15,
+      "exp": 6400
+    },
+    {
+      "landLevel": 5,
+      "fullExpMinLevel": 5,
+      "guardLevel": 22,
+      "exp": 12000
+    },
+    {
+      "landLevel": 6,
+      "fullExpMinLevel": 19,
+      "guardLevel": 27,
+      "exp": 26000
+    },
+    {
+      "landLevel": 7,
+      "fullExpMinLevel": 24,
+      "guardLevel": 33,
+      "exp": 44000
+    },
+    {
+      "landLevel": 8,
+      "fullExpMinLevel": 29,
+      "guardLevel": 37,
+      "exp": 80000
+    },
+    {
+      "landLevel": 9,
+      "fullExpMinLevel": 34,
+      "guardLevel": 42,
+      "exp": 140000
+    },
+    {
+      "landLevel": 10,
+      "fullExpMinLevel": 39,
+      "guardLevel": 45,
+      "exp": 200000
+    },
+    {
+      "landLevel": 11,
+      "fullExpMinLevel": 41,
+      "guardLevel": 48,
+      "exp": 300000
+    },
+    {
+      "landLevel": 12,
+      "fullExpMinLevel": 43,
+      "guardLevel": 50,
+      "exp": 400000
+    }
+  ],
+  "cumulativeExp": [
+    {
+      "level": 6,
+      "cumulativeExp": 2000
+    },
+    {
+      "level": 7,
+      "cumulativeExp": 5000
+    },
+    {
+      "level": 8,
+      "cumulativeExp": 9000
+    },
+    {
+      "level": 9,
+      "cumulativeExp": 14000
+    },
+    {
+      "level": 10,
+      "cumulativeExp": 20000
+    },
+    {
+      "level": 11,
+      "cumulativeExp": 28000
+    },
+    {
+      "level": 12,
+      "cumulativeExp": 39000
+    },
+    {
+      "level": 13,
+      "cumulativeExp": 53000
+    },
+    {
+      "level": 14,
+      "cumulativeExp": 70000
+    },
+    {
+      "level": 15,
+      "cumulativeExp": 90000
+    },
+    {
+      "level": 16,
+      "cumulativeExp": 118000
+    },
+    {
+      "level": 17,
+      "cumulativeExp": 150000
+    },
+    {
+      "level": 18,
+      "cumulativeExp": 186000
+    },
+    {
+      "level": 19,
+      "cumulativeExp": 226000
+    },
+    {
+      "level": 20,
+      "cumulativeExp": 270000
+    },
+    {
+      "level": 21,
+      "cumulativeExp": 350000
+    },
+    {
+      "level": 22,
+      "cumulativeExp": 446000
+    },
+    {
+      "level": 23,
+      "cumulativeExp": 560000
+    },
+    {
+      "level": 24,
+      "cumulativeExp": 694000
+    },
+    {
+      "level": 25,
+      "cumulativeExp": 852000
+    },
+    {
+      "level": 26,
+      "cumulativeExp": 1044000
+    },
+    {
+      "level": 27,
+      "cumulativeExp": 1264000
+    },
+    {
+      "level": 28,
+      "cumulativeExp": 1516000
+    },
+    {
+      "level": 29,
+      "cumulativeExp": 1804000
+    },
+    {
+      "level": 30,
+      "cumulativeExp": 2132000
+    },
+    {
+      "level": 31,
+      "cumulativeExp": 2512000
+    },
+    {
+      "level": 32,
+      "cumulativeExp": 2940000
+    },
+    {
+      "level": 33,
+      "cumulativeExp": 3420000
+    },
+    {
+      "level": 34,
+      "cumulativeExp": 3956000
+    },
+    {
+      "level": 35,
+      "cumulativeExp": 4552000
+    },
+    {
+      "level": 36,
+      "cumulativeExp": 5272000
+    },
+    {
+      "level": 37,
+      "cumulativeExp": 6112000
+    },
+    {
+      "level": 38,
+      "cumulativeExp": 7072000
+    },
+    {
+      "level": 39,
+      "cumulativeExp": 8152000
+    },
+    {
+      "level": 40,
+      "cumulativeExp": 9352000
+    },
+    {
+      "level": 41,
+      "cumulativeExp": 10852000
+    },
+    {
+      "level": 42,
+      "cumulativeExp": 12652000
+    },
+    {
+      "level": 43,
+      "cumulativeExp": 14752000
+    },
+    {
+      "level": 44,
+      "cumulativeExp": 17152000
+    },
+    {
+      "level": 45,
+      "cumulativeExp": 19852000
+    },
+    {
+      "level": 46,
+      "cumulativeExp": 22852000
+    },
+    {
+      "level": 47,
+      "cumulativeExp": 26152000
+    },
+    {
+      "level": 48,
+      "cumulativeExp": 29752000
+    },
+    {
+      "level": 49,
+      "cumulativeExp": 33752000
+    },
+    {
+      "level": 50,
+      "cumulativeExp": 38252000
+    }
+  ],
+  "sources": [
+    {
+      "label": "삼국지 천하결전 정보 시트 (박춘배 저)",
+      "url": "https://docs.google.com/spreadsheets/d/1seywjJ_B1YWFlfuWaQNPBKLSQT7dgkakDPInLJP6NfA/edit?gid=1947700900#gid=1947700900"
+    },
+    {
+      "label": "대만 개척 번역 (창천 객 번역)",
+      "url": "https://docs.google.com/spreadsheets/d/1QSXSjRZoQx1I-OfT1YL-GwuJATaTE4g6ZON_IO2gkSE/edit?gid=611048764#gid=611048764"
+    },
+    {
+      "label": "대만 유튜버 《三國謀定天下》陸服S4（業鑄山河劇本）新賽季抽卡+開荒",
+      "url": "https://www.youtube.com/watch?v=rJ1CPAn4LTk&t=9462s"
+    },
+    {
+      "label": "곽회 개척 대리 방송",
+      "url": "https://www.youtube.com/watch?v=JdcQTCinU98"
+    }
+  ]
+}
