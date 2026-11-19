@@ -7,6 +7,8 @@ export interface TrackingUnitState {
   lv?: number;
   /** 체력. undefined = 변화 없음("-"). */
   hp?: number;
+  /** true면 그 행에서 바뀐 값이 아니라 직전 값을 이어받아 보여주는 것(흐리게 표시). */
+  carried?: boolean;
 }
 
 /** 한 행(개척1/2/3의 단일 행동 또는 마일스톤). */
@@ -34,8 +36,8 @@ export interface TrackingRow {
   reclaimStatus?: string;
   /** 점령지 현황. 예: "Lv5×3, Lv3×1 (4/12)". */
   occupyStatus?: string;
-  /** 개척1/2/3 순서의 부대 상태 배열(길이 3). */
-  units: [TrackingUnitState, TrackingUnitState, TrackingUnitState];
+  /** 부대(개척1/2/3…) 순서의 상태 배열. S3는 길이 3, S4는 덱 수만큼. */
+  units: TrackingUnitState[];
   /** 닭다리 개수. 숫자 또는 "회복" 같은 특수 표기. */
   chicken?: number | string;
   /** 팁/비고. */
@@ -112,6 +114,10 @@ export interface TrackingCommon {
   cumulativeExp?: CumulativeExpEntry[];
   /** 개척 부대(덱) 구성(선택). 저돌파/고돌파 공용. */
   decks?: PioneerDeck[];
+  /** 부대 열 머리글(선택). 기본값은 개척1/개척2/개척3. */
+  unitLabels?: string[];
+  /** 레벨 표시 소수 자릿수(선택). 기본값 2. */
+  levelDecimals?: number;
   /** 출처/참고 자료(선택). */
   sources?: SourceLink[];
 }
@@ -144,6 +150,10 @@ export interface TrackingData {
   cumulativeExp?: CumulativeExpEntry[];
   /** 개척 부대(덱) 구성(선택). */
   decks?: PioneerDeck[];
+  /** 부대 열 머리글(선택). 기본값은 개척1/개척2/개척3. */
+  unitLabels?: string[];
+  /** 레벨 표시 소수 자릿수(선택). 기본값 2. */
+  levelDecimals?: number;
   /** 출처/참고 자료(선택). */
   sources?: SourceLink[];
 }

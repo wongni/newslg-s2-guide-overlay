@@ -23,10 +23,11 @@ const ACTION_STYLES: Record<string, string> = {
   기타: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
 };
 
-function fmtLevel(lv?: number): string {
+function fmtLevel(lv?: number, decimals = 2): string {
   if (lv === undefined) return "-";
-  // 정수면 소수점 없이, 아니면 소수 둘째 자리까지
-  return Number.isInteger(lv) ? String(lv) : lv.toFixed(2);
+  // 표시 자릿수까지 반올림한 뒤, 정수면 소수점 없이 표기
+  const rounded = Number(lv.toFixed(decimals));
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(decimals);
 }
 
 function fmtHp(hp?: number): string {
@@ -38,9 +39,9 @@ function fmtChicken(chicken?: number | string): string {
   return String(chicken);
 }
 
-/** "2장 완료", "6장·번영도 4500" 등에서 기준 챕터("2장","6장")를 추출해 그룹 경계 판단에 사용. */
+/** "2장 완료", "6장·번영도 4500", "1일차 ①" 등에서 기준 챕터/일차("2장","1일차")를 추출해 그룹 경계 판단에 사용. */
 function baseChapter(chapter: string): string {
-  const m = chapter.match(/^\d+장/);
+  const m = chapter.match(/^\d+(?:장|일차)/);
   if (m) return m[0];
   return chapter;
 }
@@ -143,7 +144,23 @@ const UNIT_TAG_STYLE: Record<string, string> = {
   개척3: "text-sky-600 dark:text-sky-400",
   개척4: "text-violet-600 dark:text-violet-400",
   "개척3/4": "text-violet-600 dark:text-violet-400",
+  개척5: "text-fuchsia-600 dark:text-fuchsia-400",
+  // 부대 태그(개척N 이외)
+  "아무 장수": "text-zinc-500 dark:text-zinc-400",
+  "보라 장수": "text-purple-600 dark:text-purple-400",
 };
+
+/** "개척2 동남만" 처럼 덱 이름이 붙은 태그도 앞의 "개척N" 색을 쓴다. */
+function unitTagStyle(tag: string): string {
+  return (
+    UNIT_TAG_STYLE[tag] ??
+    UNIT_TAG_STYLE[tag.match(/^개척[0-9/]+/)?.[0] ?? ""] ??
+    "text-zinc-500 dark:text-zinc-400"
+  );
+}
+
+/** 행 대상 말미 "(…)" 가 부대 태그로 취급되는 이름. (S3의 "(석재)" 같은 다른 괄호와 구분) */
+const UNIT_TAG_RE = /\((개척[0-9/]+(?: [^()]+)?|아무 장수|보라 장수)\)\s*$/;
 
 /** 대상/현황 텍스트에서 키워드를 이모지로 치환 (앞에 아이콘 부착, 단어는 유지). */
 const ICON_MAP: [RegExp, string][] = [
@@ -194,7 +211,7 @@ function renderTextSegment(text: string, keyBase: string): ReactNode {
 /** 대상 문자열에서 말미의 "(개척N)" 태그를 추출. */
 function extractUnitTag(raw?: string): { unitTag?: string; body: string } {
   if (!raw) return { body: "" };
-  const unitMatch = raw.match(/\((개척[0-9/]+)\)\s*$/);
+  const unitMatch = raw.match(UNIT_TAG_RE);
   if (unitMatch) {
     return { unitTag: unitMatch[1], body: raw.slice(0, unitMatch.index).trim() };
   }
@@ -206,7 +223,7 @@ function UnitTag({ tag }: { tag: string }) {
   return (
     <span
       className={`text-[10px] font-semibold whitespace-nowrap ${
-        UNIT_TAG_STYLE[tag] ?? "text-zinc-500 dark:text-zinc-400"
+        unitTagStyle(tag)
       }`}
     >
       {tag}
@@ -321,16 +338,20 @@ function useTrackingProgress(storageKey: string) {
 function UnitCell({
   unit,
   stacked = false,
+  decimals = 2,
 }: {
   unit: TrackingUnitState;
   stacked?: boolean;
+  decimals?: number;
 }) {
   const hasChange = unit.lv !== undefined || unit.hp !== undefined;
   if (!hasChange) return <span className="text-zinc-300 dark:text-zinc-600">-</span>;
+  // 이어받은 값(그 행에서 바뀌지 않은 덱)은 흐리게 표시
+  const dim = unit.carried ? " opacity-45" : "";
   if (stacked) {
     return (
-      <span className="inline-flex flex-col items-center leading-tight font-mono">
-        <span className="font-bold">{fmtLevel(unit.lv)}</span>
+      <span className={`inline-flex flex-col items-center leading-tight font-mono${dim}`}>
+        <span className="font-bold">{fmtLevel(unit.lv, decimals)}</span>
         <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
           {fmtHp(unit.hp)}
         </span>
@@ -338,8 +359,8 @@ function UnitCell({
     );
   }
   return (
-    <span className="font-mono">
-      <span className="font-bold">{fmtLevel(unit.lv)}</span>
+    <span className={`font-mono${dim}`}>
+      <span className="font-bold">{fmtLevel(unit.lv, decimals)}</span>
       <span className="text-zinc-400 dark:text-zinc-500"> / </span>
       <span className="text-zinc-600 dark:text-zinc-400">{fmtHp(unit.hp)}</span>
     </span>
@@ -371,6 +392,8 @@ export function TrackingTable({
   const total = data.rows.length;
   const doneCount = completed.size;
   const percent = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+  const unitLabels = data.unitLabels ?? UNIT_LABELS;
+  const levelDecimals = data.levelDecimals ?? 2;
 
   return (
     <div className="text-zinc-900 dark:text-zinc-100">
@@ -608,7 +631,7 @@ export function TrackingTable({
                 <th className="px-2 py-2.5 whitespace-nowrap">대상</th>
                 <th className="px-2 py-2.5 whitespace-nowrap">개간지 현황</th>
                 <th className="px-2 py-2.5 whitespace-nowrap">점령지 현황</th>
-                {UNIT_LABELS.map((label, u) => (
+                {unitLabels.map((label, u) => (
                   <th
                     key={label}
                     className={`px-2 py-2.5 text-center whitespace-nowrap ${
@@ -680,7 +703,7 @@ export function TrackingTable({
                             : ""
                         }`}
                       >
-                        <UnitCell unit={unit} stacked />
+                        <UnitCell unit={unit} stacked decimals={levelDecimals} />
                       </td>
                     ))}
                     <td className="px-2 py-2 text-center font-mono">
@@ -704,7 +727,7 @@ export function TrackingTable({
             const curBase = baseChapter(row.chapter);
             const isGroupStart = prevBase === null || prevBase !== curBase;
             const hasUnitChange = row.units.some(
-              (u) => u.lv !== undefined || u.hp !== undefined
+              (u) => (u.lv !== undefined || u.hp !== undefined) && !u.carried
             );
             return (
               <div key={i}>
@@ -785,13 +808,13 @@ export function TrackingTable({
                                   >
                                     <span
                                       className={`text-[10px] font-semibold ${
-                                        UNIT_TAG_STYLE[UNIT_LABELS[u]] ??
+                                        UNIT_TAG_STYLE[unitLabels[u]] ??
                                         "text-zinc-500 dark:text-zinc-400"
                                       }`}
                                     >
-                                      {UNIT_LABELS[u]}
+                                      {unitLabels[u]}
                                     </span>
-                                    <UnitCell unit={unit} />
+                                    <UnitCell unit={unit} decimals={levelDecimals} />
                                   </span>
                                 );
                               })}

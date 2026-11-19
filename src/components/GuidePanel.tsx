@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useRef, useState, useCallback } from "react";
 import guideSteps from "@/data/guide-steps";
+import { getActiveSeason } from "@/data/season";
 import { GuideStepRaw } from "@/types/guide";
 import { TIER_VALUES, COMMON_VALUES, TierValuesMap, CommonValuesMap } from "@/data/tier-config";
 import { useProgress } from "@/hooks/useProgress";
@@ -287,7 +288,9 @@ export function GuidePanel({ compact = false }: GuidePanelProps) {
       {/* Subtitle */}
       <div className="max-w-3xl mx-auto px-4 pt-3">
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          S3 시즌(글로벌 S2) · 원문: slgguxi 古今工作室 · 번역: 3서버 담덕
+          {getActiveSeason() === "s4"
+            ? "S4 시즌 · 원문: 三國謀定天下 貂蟬攻略合集(작성 雕馋) 「문정 S5 개척」 · 중국 서버 기준 Ver2.6"
+            : "S3 시즌(글로벌 S2) · 원문: slgguxi 古今工作室 · 번역: 3서버 담덕"}
         </p>
       </div>
 

@@ -2,8 +2,9 @@
 import { getActiveSeason } from "./season";
 import * as s2 from "./s2/tier-config";
 import * as s3 from "./s3/tier-config";
+import * as s4 from "./s4/tier-config";
 
-const active = getActiveSeason() === "s2" ? s2 : s3;
+const active = { s2, s3, s4 }[getActiveSeason()];
 
 export type TierLevel = "명함" | "저돌파" | "중돌파" | "고돌파";
 export type TierValuesMap = Record<TierLevel, Record<string, string>>;

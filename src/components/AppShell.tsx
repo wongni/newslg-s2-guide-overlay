@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { UserMenu } from "./UserMenu";
 import { BottomTabBar } from "./BottomTabBar";
 import { SeasonSwitcher } from "./SeasonSwitcher";
-import { getActiveSeason, getSeasonMeta } from "@/data/season";
+import { DEFAULT_SEASON, getActiveSeason, getSeasonMeta } from "@/data/season";
 
 export interface TabRoute {
   path: string;
@@ -65,7 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const themeIcon = mounted ? (resolvedTheme === "dark" ? "☀️" : "🌙") : "🌙";
 
   // 활성 시즌 코드 (마운트 전에는 기본 S3 표기 — hydration mismatch 방지용으로 mounted 후 갱신)
-  const seasonCode = mounted ? getSeasonMeta(getActiveSeason()).code : "S3";
+  const seasonCode = mounted ? getSeasonMeta(getActiveSeason()).code : getSeasonMeta(DEFAULT_SEASON).code;
 
   // Don't render AppShell on guide detail pages (they have their own layout)
   const isDetailPage = pathname.startsWith("/guides/") && pathname !== "/guides";

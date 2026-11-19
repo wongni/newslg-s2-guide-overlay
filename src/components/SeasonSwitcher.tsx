@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   SEASONS,
+  DEFAULT_SEASON,
   type SeasonId,
   getActiveSeason,
   setActiveSeason,
@@ -16,7 +17,7 @@ import {
  */
 export function SeasonSwitcher({ compact = false }: { compact?: boolean }) {
   const [mounted, setMounted] = useState(false);
-  const [season, setSeason] = useState<SeasonId>("s3");
+  const [season, setSeason] = useState<SeasonId>(DEFAULT_SEASON);
 
   useEffect(() => {
     setSeason(getActiveSeason());
@@ -31,7 +32,7 @@ export function SeasonSwitcher({ compact = false }: { compact?: boolean }) {
   };
 
   // SSR/hydration mismatch 방지 — 마운트 전에는 기본 표시
-  const current = mounted ? season : "s3";
+  const current = mounted ? season : DEFAULT_SEASON;
 
   return (
     <label

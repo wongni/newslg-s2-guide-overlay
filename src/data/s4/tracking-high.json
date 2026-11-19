@@ -1,0 +1,2235 @@
+{
+  "title": "S4 개척 트래킹 (고돌파·풀돌 기준)",
+  "rows": [
+    {
+      "chapter": "시작",
+      "action": "기타",
+      "target": "-",
+      "units": [
+        {
+          "lv": 5,
+          "hp": 200
+        },
+        {
+          "lv": 5,
+          "hp": 200
+        },
+        {
+          "lv": 5,
+          "hp": 200
+        },
+        {
+          "lv": 5,
+          "hp": 200
+        },
+        {
+          "lv": 5,
+          "hp": 200
+        }
+      ],
+      "tip": "1일차",
+      "reclaimStatus": "Lv1×4 (4/4)",
+      "occupyStatus": "(0/10)",
+      "chicken": 0
+    },
+    {
+      "chapter": "2장",
+      "action": "개간",
+      "target": "Lv1 ×4 (개척1 노동대)",
+      "units": [
+        {
+          "lv": 8.25,
+          "hp": 160
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv2×4 (4/4)",
+      "occupyStatus": "(0/10)",
+      "chicken": 0
+    },
+    {
+      "chapter": "2장 완료",
+      "action": "완료",
+      "target": "닭다리 +2",
+      "reclaimStatus": "Lv2×4 (4/4)",
+      "occupyStatus": "(0/10)",
+      "units": [
+        {
+          "lv": 8.25,
+          "hp": 160,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 2
+    },
+    {
+      "chapter": "3장",
+      "action": "개간",
+      "target": "Lv2 ×2 (개척1 노동대)",
+      "units": [
+        {
+          "lv": 9.31,
+          "hp": 140
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv3×2, Lv2×2 (4/4)",
+      "occupyStatus": "(0/10)",
+      "chicken": 2
+    },
+    {
+      "chapter": "3장 완료",
+      "action": "완료",
+      "target": "닭다리 +2",
+      "reclaimStatus": "Lv3×2, Lv2×2 (4/4)",
+      "occupyStatus": "(0/10)",
+      "units": [
+        {
+          "lv": 9.31,
+          "hp": 140,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 4
+    },
+    {
+      "chapter": "4장",
+      "action": "퇴진/편성",
+      "target": "개척1 → 개척2",
+      "units": [
+        {
+          "lv": 9.31,
+          "hp": 140,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv3×2, Lv2×2 (4/4)",
+      "occupyStatus": "(0/10)",
+      "chicken": 4
+    },
+    {
+      "chapter": "4장",
+      "action": "개간",
+      "target": "Lv2 ×2 (개척2 동남만)",
+      "units": [
+        {
+          "lv": 9.31,
+          "hp": 140,
+          "carried": true
+        },
+        {
+          "lv": 7.15,
+          "hp": 180
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv3×4 (4/4)",
+      "occupyStatus": "(0/10)",
+      "chicken": 4
+    },
+    {
+      "chapter": "4장 완료",
+      "action": "완료",
+      "target": "개간지 한도 +2, 닭다리 +2",
+      "reclaimStatus": "Lv3×6 (6/6)",
+      "occupyStatus": "(0/10)",
+      "units": [
+        {
+          "lv": 9.31,
+          "hp": 140,
+          "carried": true
+        },
+        {
+          "lv": 7.15,
+          "hp": 180,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 6
+    },
+    {
+      "chapter": "5장",
+      "action": "점령",
+      "target": "Lv4 ×1 (개척2 동남만)",
+      "units": [
+        {
+          "lv": 9.31,
+          "hp": 140,
+          "carried": true
+        },
+        {
+          "lv": 8.6,
+          "hp": 160
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv3×6 (6/6)",
+      "occupyStatus": "Lv4×1 (1/10)",
+      "chicken": 6
+    },
+    {
+      "chapter": "5장 완료",
+      "action": "완료",
+      "target": "개간지 한도 +2, 닭다리 +2",
+      "reclaimStatus": "Lv3×8 (8/8)",
+      "occupyStatus": "Lv4×1 (1/10)",
+      "units": [
+        {
+          "lv": 9.31,
+          "hp": 140,
+          "carried": true
+        },
+        {
+          "lv": 8.6,
+          "hp": 160,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 8
+    },
+    {
+      "chapter": "6장",
+      "action": "개간",
+      "target": "Lv3 ×2 (개척2 동남만)",
+      "units": [
+        {
+          "lv": 9.31,
+          "hp": 140,
+          "carried": true
+        },
+        {
+          "lv": 10.6,
+          "hp": 120
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv4×2, Lv3×6 (8/8)",
+      "occupyStatus": "Lv4×1 (1/10)",
+      "chicken": 8
+    },
+    {
+      "chapter": "6장",
+      "action": "점령",
+      "target": "Lv5 ×2 (개척2 동남만)",
+      "units": [
+        {
+          "lv": 9.31,
+          "hp": 140,
+          "carried": true
+        },
+        {
+          "lv": 12.7,
+          "hp": 80
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "3보라 장수 땅은 고민 없이 침",
+      "reclaimStatus": "Lv4×2, Lv3×6 (8/8)",
+      "occupyStatus": "Lv5×2, Lv4×1 (3/10)",
+      "chicken": 8
+    },
+    {
+      "chapter": "6장",
+      "action": "퇴진/편성",
+      "target": "개척2 → 개척1",
+      "units": [
+        {
+          "lv": 9.31,
+          "hp": 140
+        },
+        {
+          "lv": 12.7,
+          "hp": 80,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv4×2, Lv3×6 (8/8)",
+      "occupyStatus": "Lv5×2, Lv4×1 (3/10)",
+      "chicken": 8
+    },
+    {
+      "chapter": "6장",
+      "action": "개간",
+      "target": "Lv3 ×6 (개척1 노동대)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20
+        },
+        {
+          "lv": 12.7,
+          "hp": 80,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv4×8 (8/8)",
+      "occupyStatus": "Lv5×2, Lv4×1 (3/10)",
+      "chicken": 8
+    },
+    {
+      "chapter": "6장·번영도 4500",
+      "action": "한도증가",
+      "target": "영지 한도 +2",
+      "reclaimStatus": "Lv4×8 (8/8)",
+      "occupyStatus": "Lv5×2, Lv4×1 (3/12)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 12.7,
+          "hp": 80,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 8
+    },
+    {
+      "chapter": "6장 완료",
+      "action": "완료",
+      "target": "개간지 한도 +2, 닭다리 +2",
+      "reclaimStatus": "Lv4×8, Lv3×2 (10/10)",
+      "occupyStatus": "Lv5×2, Lv4×1 (3/12)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 12.7,
+          "hp": 80,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 10
+    },
+    {
+      "chapter": "7장",
+      "action": "퇴진/편성",
+      "target": "개척1 → 개척2",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 12.7,
+          "hp": 80
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv4×8, Lv3×2 (10/10)",
+      "occupyStatus": "Lv5×2, Lv4×1 (3/12)",
+      "chicken": 10
+    },
+    {
+      "chapter": "7장",
+      "action": "개간",
+      "target": "Lv4 ×4 (개척2 동남만)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 15.24,
+          "hp": 0
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv5×4, Lv4×4, Lv3×2 (10/10)",
+      "occupyStatus": "Lv5×2, Lv4×1 (3/12)",
+      "chicken": 10
+    },
+    {
+      "chapter": "7장",
+      "action": "개간",
+      "target": "Lv5 ×3 (개척2 동남만)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 17.04,
+          "hp": 0
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "내성 우선 · 장패 › 유엽 › 장흠 순. 실패해도 5레벨보다 경험치가 많음",
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×2 (10/10)",
+      "occupyStatus": "Lv5×2, Lv4×1 (3/12)",
+      "chicken": 9
+    },
+    {
+      "chapter": "7장",
+      "action": "점령",
+      "target": "Lv6 ×1 (개척2 동남만)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 17.54,
+          "hp": 40
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×2 (10/10)",
+      "occupyStatus": "Lv6×1, Lv5×2, Lv4×1 (4/12)",
+      "chicken": 8,
+      "tip": "9장 소탕용 외성 1칸"
+    },
+    {
+      "chapter": "7장·번영도 10000",
+      "action": "한도증가",
+      "target": "영지 한도 +2",
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×2 (10/10)",
+      "occupyStatus": "Lv6×1, Lv5×2, Lv4×1 (4/14)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 17.54,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 8
+    },
+    {
+      "chapter": "7장 완료",
+      "action": "완료",
+      "target": "개간지 한도 +2, 닭다리 +2",
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×4 (12/12)",
+      "occupyStatus": "Lv6×1, Lv5×2, Lv4×1 (4/14)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 17.54,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 10
+    },
+    {
+      "chapter": "8장",
+      "action": "둔전",
+      "target": "Lv6 석재 ×1 (개척2 동남만)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 17.54,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×4 (12/12)",
+      "occupyStatus": "Lv6×1, Lv5×2, Lv4×1 (4/14)",
+      "chicken": 10
+    },
+    {
+      "chapter": "8장·번영도 15000",
+      "action": "한도증가",
+      "target": "영지 한도 +3",
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×4 (12/12)",
+      "occupyStatus": "Lv6×1, Lv5×2, Lv4×1 (4/17)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 17.54,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 10
+    },
+    {
+      "chapter": "8장 완료",
+      "action": "완료",
+      "target": "개간지 한도 +2, 닭다리 +2",
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×6 (14/14)",
+      "occupyStatus": "Lv6×1, Lv5×2, Lv4×1 (4/17)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 17.54,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 12
+    },
+    {
+      "chapter": "9장",
+      "action": "소탕",
+      "target": "Lv6 ×9 (개척2 동남만)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 21.23,
+          "hp": 40
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×6 (14/14)",
+      "occupyStatus": "Lv6×1, Lv5×2, Lv4×1 (4/17)",
+      "chicken": 9
+    },
+    {
+      "chapter": "9장",
+      "action": "교체",
+      "target": "개척2 → 개척3 교체",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 21.23,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 21.23,
+          "hp": 40
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×6 (14/14)",
+      "occupyStatus": "Lv6×1, Lv5×2, Lv4×1 (4/17)",
+      "chicken": 9
+    },
+    {
+      "chapter": "9장",
+      "action": "점령",
+      "target": "Lv7 ×1 (개척3 좌전녕)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 21.23,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 21.55,
+          "hp": 20
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "병영 없이 7레벨 열기. 등애 우선, 없으면 정보",
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×6 (14/14)",
+      "occupyStatus": "Lv7×1, Lv6×1, Lv5×2, Lv4×1 (5/17)",
+      "chicken": 9
+    },
+    {
+      "chapter": "9장",
+      "action": "점령",
+      "target": "Lv7 ×4 (개척3 좌전녕)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 21.23,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 22.71,
+          "hp": 0
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "철 1칸·목재 1칸·석재 2칸 확보로 임무 완료, 서둘러 병영 올리기",
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×6 (14/14)",
+      "occupyStatus": "Lv7×5, Lv6×1, Lv5×2, Lv4×1 (9/17)",
+      "chicken": 8
+    },
+    {
+      "chapter": "9장",
+      "action": "편성",
+      "target": "개척2 편성",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 10,
+          "hp": 200
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "체력이 가득 찬 아무 장수 3명을 임시 편성. 방치와 군사 연습 경험치로 10레벨",
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×6 (14/14)",
+      "occupyStatus": "Lv7×5, Lv6×1, Lv5×2, Lv4×1 (9/17)",
+      "chicken": 8
+    },
+    {
+      "chapter": "9장 완료",
+      "action": "완료",
+      "target": "개간지 한도 +2, 닭다리 +3",
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×8 (16/16)",
+      "occupyStatus": "Lv7×5, Lv6×1, Lv5×2, Lv4×1 (9/17)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 10,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 11
+    },
+    {
+      "chapter": "10장",
+      "action": "교체",
+      "target": "아무 장수 → 개척2 교체",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 10,
+          "hp": 200
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv6×3, Lv5×1, Lv4×4, Lv3×8 (16/16)",
+      "occupyStatus": "Lv7×5, Lv6×1, Lv5×2, Lv4×1 (9/17)",
+      "chicken": 11
+    },
+    {
+      "chapter": "10장",
+      "action": "개간",
+      "target": "3→4, 4→5 (개척2 남만방패)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 15.13,
+          "hp": 40
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv6×3, Lv5×5, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv7×5, Lv6×1, Lv5×2, Lv4×1 (9/17)",
+      "chicken": 11
+    },
+    {
+      "chapter": "10장",
+      "action": "퇴진",
+      "target": "개척2 퇴진",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 15.13,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "아무 장수 3명을 다시 편성. 방치 경험치만, 군사 연습은 안 먹임 (3부대 틀)",
+      "reclaimStatus": "Lv6×3, Lv5×5, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv7×5, Lv6×1, Lv5×2, Lv4×1 (9/17)",
+      "chicken": 11
+    },
+    {
+      "chapter": "10장·번영도 20000",
+      "action": "한도증가",
+      "target": "영지 한도 +3",
+      "reclaimStatus": "Lv6×3, Lv5×5, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv7×5, Lv6×1, Lv5×2, Lv4×1 (9/20)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 15.13,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "chicken": 11
+    },
+    {
+      "chapter": "10장 완료",
+      "action": "완료",
+      "target": "닭다리 +4",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 15.13,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "milestone": true,
+      "reclaimStatus": "Lv6×3, Lv5×5, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv7×5, Lv6×1, Lv5×2, Lv4×1 (9/20)",
+      "chicken": 15,
+      "tip": "처음 4시간 기준 · 번영도 2.7만"
+    },
+    {
+      "chapter": "11장",
+      "action": "교체",
+      "target": "개척3 → 개척4 교체",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 15.13,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 24.11,
+          "hp": 0
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "저품은 25레벨",
+      "reclaimStatus": "Lv6×3, Lv5×5, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv7×5, Lv6×1, Lv5×2, Lv4×1 (9/20)",
+      "chicken": 13
+    },
+    {
+      "chapter": "11장",
+      "action": "점령",
+      "target": "Lv8 (개척4 초남만)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 15.13,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 30.05,
+          "hp": 0
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "첫 개방은 병기만. 내성 먼저. 우선 공략: 장비, 雙寶",
+      "reclaimStatus": "Lv6×3, Lv5×5, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (11/20)",
+      "chicken": 5
+    },
+    {
+      "chapter": "11장",
+      "action": "점령",
+      "target": "Lv9 (개척4 초남만)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 15.13,
+          "hp": 40,
+          "carried": true
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "30레벨에 시작 (순위 경쟁이면 29). 병기 우선(장비), 여몽은 피할 것. 31레벨 전에 닭다리 먹기",
+      "reclaimStatus": "Lv6×3, Lv5×5, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×2, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (13/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장",
+      "action": "편성",
+      "target": "개척2 편성",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 16,
+          "hp": 200
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "대략 저녁 7~8시. 군사 연습 경험치 사용",
+      "reclaimStatus": "Lv6×3, Lv5×5, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×2, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (13/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장",
+      "action": "개간",
+      "target": "5→6 (개척2 남만방패)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv6×7, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×2, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (13/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장",
+      "action": "퇴진",
+      "target": "개척2 퇴진",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "아무 장수 3명을 다시 편성 (방치 경험치)",
+      "reclaimStatus": "Lv6×7, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×2, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (13/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장",
+      "action": "교체",
+      "target": "개척2 → 보라 장수 교체",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 22.71,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "💬 자기 전, 체력을 다 쓴 남만방패를 체력이 가득 찬 보라 장수로 교체: 자는 동안 휴식 경험치를 얻기 위함. 남만방패는 체력을 회복하느라 휴식 경험치를 못 얻음",
+      "reclaimStatus": "Lv6×7, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×2, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (13/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장",
+      "action": "교체",
+      "target": "보라 장수 → 개척3 교체",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 20,
+          "hp": 200
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "2군으로 사용 · 군사 연습 경험치",
+      "reclaimStatus": "Lv6×7, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×2, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (13/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장",
+      "action": "개간",
+      "target": "6→7 (개척3 좌전녕)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 22.08,
+          "hp": 80
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "reclaimStatus": "Lv7×6, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×2, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (13/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장",
+      "action": "소탕",
+      "target": "Lv7 (개척3 좌전녕)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 23.13,
+          "hp": 0
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "tip": "체력이 남으면 외성 소탕. 남는 닭다리는 2군에 사용하고 접속 종료",
+      "reclaimStatus": "Lv7×6, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×2, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (13/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장",
+      "action": "완료",
+      "target": "1일차 종료",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0
+        },
+        {
+          "lv": 34,
+          "hp": 0
+        },
+        {
+          "lv": 5,
+          "hp": 200,
+          "carried": true
+        }
+      ],
+      "milestone": true,
+      "tip": "출관 전 군량 땅 금지 · 목재:철:석재 = 3:3:4",
+      "reclaimStatus": "Lv7×6, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×2, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (13/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "교체",
+      "target": "개척4 → 개척5 교체",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 200
+        }
+      ],
+      "tip": "2일차 · 새벽 안형진 해금 후. 손상향은 조금 피할 것",
+      "reclaimStatus": "Lv7×6, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×2, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (13/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "점령",
+      "target": "Lv9 (개척5 SP제갈량 남만방패)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 35,
+          "hp": 0
+        }
+      ],
+      "tip": "외성 먼저. 저녁이면 9레벨은 남지 않음",
+      "reclaimStatus": "Lv7×6, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×4, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (15/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "편성",
+      "target": "개척5 2군 편성",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 25,
+          "hp": 200
+        }
+      ],
+      "tip": "1군은 보라 장수 3명으로 교체, 2군 체력을 이어받음",
+      "reclaimStatus": "Lv7×6, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×4, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (15/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "개간",
+      "target": "7→8 (개척5 SP제갈량 남만방패)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 26.65,
+          "hp": 80
+        }
+      ],
+      "tip": "이후 2군은 보라 장수 3명으로 교체",
+      "reclaimStatus": "Lv8×6, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×4, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (15/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "편성",
+      "target": "개척5 1군 편성",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 35,
+          "hp": 200
+        }
+      ],
+      "reclaimStatus": "Lv8×6, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×4, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (15/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "점령",
+      "target": "Lv9 (개척5 SP제갈량 남만방패)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 39,
+          "hp": 120
+        }
+      ],
+      "reclaimStatus": "Lv8×6, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv9×6, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (17/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "점령",
+      "target": "Lv10 (개척5 SP제갈량 남만방패)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 39.9,
+          "hp": 0
+        }
+      ],
+      "tip": "전위 우선. 내성 9→10 개간 포함",
+      "reclaimStatus": "Lv10×2, Lv8×4, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv10×2, Lv9×6, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (19/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "편성",
+      "target": "개척5 2군 편성",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 29,
+          "hp": 80
+        }
+      ],
+      "tip": "1군은 보라 장수 3명으로 교체. 군사 연습으로 최소 29레벨 (안 되면 방치)",
+      "reclaimStatus": "Lv10×2, Lv8×4, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv10×2, Lv9×6, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (19/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "개간",
+      "target": "8→9 (개척5 SP제갈량 남만방패)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 31,
+          "hp": 0
+        }
+      ],
+      "tip": "체력 소진 후 접속 종료·취침",
+      "reclaimStatus": "Lv10×2, Lv9×4, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv10×2, Lv9×6, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (19/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "기타",
+      "target": "오곡풍양 (병참)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 31,
+          "hp": 0,
+          "carried": true
+        }
+      ],
+      "tip": "병참: 주성 8레벨에서 막혔을 때 사용",
+      "reclaimStatus": "Lv10×2, Lv9×4, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv10×2, Lv9×6, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (19/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "완료",
+      "target": "2일차 종료",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 39.9,
+          "hp": 0
+        }
+      ],
+      "milestone": true,
+      "tip": "2군 약 31레벨 · 자원주 진입 전 군량 땅 금지",
+      "reclaimStatus": "Lv10×2, Lv9×4, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv10×2, Lv9×6, Lv8×2, Lv7×5, Lv6×1, Lv5×2, Lv4×1 (19/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "점령",
+      "target": "Lv11 (개척5 SP제갈량 남만방패)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 40.28,
+          "hp": 160
+        }
+      ],
+      "tip": "3일차 · 허저 우선",
+      "reclaimStatus": "Lv10×2, Lv9×4, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv11×2, Lv10×2, Lv9×6, Lv8×2, Lv7×5, Lv6×1, Lv5×2 (20/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "점령",
+      "target": "Lv12 (개척5 SP제갈량 남만방패)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 41.31,
+          "hp": 120
+        }
+      ],
+      "tip": "여몽만 피하면 됨",
+      "reclaimStatus": "Lv10×2, Lv9×4, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv12×2, Lv11×2, Lv10×2, Lv9×6, Lv8×2, Lv7×5, Lv6×1 (20/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "기타",
+      "target": "원정 (개척5 SP제갈량 남만방패)",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 41.31,
+          "hp": 120,
+          "carried": true
+        }
+      ],
+      "tip": "대략 낮 12시~오후 6시. 병법 재설정 필수(원정 중 주는 병법도). 최소 10장",
+      "reclaimStatus": "Lv10×2, Lv9×4, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv12×2, Lv11×2, Lv10×2, Lv9×6, Lv8×2, Lv7×5, Lv6×1 (20/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "편성",
+      "target": "개척5 1군, 개척3 2군 편성",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 41.31,
+          "hp": 120,
+          "carried": true
+        }
+      ],
+      "tip": "초보자 기간 종료. 침략 방어를 같이 쓰면 되고, 전법을 바꿔도 손실 없음",
+      "reclaimStatus": "Lv10×2, Lv9×4, Lv6×1, Lv5×1, Lv4×4, Lv3×4 (16/16)",
+      "occupyStatus": "Lv12×2, Lv11×2, Lv10×2, Lv9×6, Lv8×2, Lv7×5, Lv6×1 (20/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "기타",
+      "target": "내성 전부 12레벨",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 41.31,
+          "hp": 120,
+          "carried": true
+        }
+      ],
+      "tip": "4일차 · 자원지 기술 1레벨만 (병참·진군은 16장 임무부터 끝까지)",
+      "reclaimStatus": "Lv12×16 (16/16)",
+      "occupyStatus": "Lv12×2, Lv11×2, Lv10×2, Lv9×6, Lv8×2, Lv7×5, Lv6×1 (20/20)",
+      "chicken": 0
+    },
+    {
+      "chapter": "11장 이후",
+      "action": "완료",
+      "target": "-",
+      "units": [
+        {
+          "lv": 13.07,
+          "hp": 20,
+          "carried": true
+        },
+        {
+          "lv": 18.12,
+          "hp": 120,
+          "carried": true
+        },
+        {
+          "lv": 24,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 34,
+          "hp": 0,
+          "carried": true
+        },
+        {
+          "lv": 41.31,
+          "hp": 120,
+          "carried": true
+        }
+      ],
+      "milestone": true,
+      "tip": "병참 8.9만 · 진군 8.5만 · 신행·기좌 8만 · 청낭 7.8만 · 천공 7.5만",
+      "reclaimStatus": "Lv12×16 (16/16)",
+      "occupyStatus": "Lv12×2, Lv11×2, Lv10×2, Lv9×6, Lv8×2, Lv7×5, Lv6×1 (20/20)",
+      "chicken": 0
+    }
+  ]
+}

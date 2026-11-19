@@ -11,7 +11,7 @@
 //
 // 시즌을 바꾸면 정적 import 데이터를 다시 로드하기 위해 페이지를 새로고침한다.
 
-export type SeasonId = "s2" | "s3";
+export type SeasonId = "s2" | "s3" | "s4";
 
 export interface SeasonMeta {
   id: SeasonId;
@@ -21,6 +21,13 @@ export interface SeasonMeta {
 }
 
 export const SEASONS: SeasonMeta[] = [
+  {
+    id: "s4",
+    code: "S4",
+    name: "남만 개척",
+    description:
+      "삼국지 천하결전 시즌4 — 개척 타임라인(1~4일차). 장수·상성·적 덱 데이터는 S3 것을 그대로 사용",
+  },
   {
     id: "s3",
     code: "S3",
@@ -36,12 +43,12 @@ export const SEASONS: SeasonMeta[] = [
 ];
 
 export const DEFAULT_SEASON: SeasonId =
-  (process.env.NEXT_PUBLIC_DEFAULT_SEASON as SeasonId) || "s3";
+  (process.env.NEXT_PUBLIC_DEFAULT_SEASON as SeasonId) || "s4";
 
 export const SEASON_STORAGE_KEY = "activeSeason";
 
 function isSeasonId(v: unknown): v is SeasonId {
-  return v === "s2" || v === "s3";
+  return v === "s2" || v === "s3" || v === "s4";
 }
 
 /**

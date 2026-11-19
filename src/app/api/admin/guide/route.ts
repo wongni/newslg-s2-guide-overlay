@@ -14,6 +14,10 @@ import s3Steps from "@/data/s3/guide-steps.json";
 import s3TierValues from "@/data/s3/tier-values.json";
 import s3CommonValues from "@/data/s3/common-values.json";
 import s3Glossary from "@/data/s3/glossary.json";
+import s4Steps from "@/data/s4/guide-steps.json";
+import s4TierValues from "@/data/s4/tier-values.json";
+import s4CommonValues from "@/data/s4/common-values.json";
+import s4Glossary from "@/data/s4/glossary.json";
 import { DEFAULT_SEASON, type SeasonId } from "@/data/season";
 
 // 시즌별 번들 기본값
@@ -30,11 +34,17 @@ const BUNDLED = {
     commonValues: s3CommonValues,
     glossary: s3Glossary,
   },
+  s4: {
+    steps: s4Steps,
+    tierValues: s4TierValues,
+    commonValues: s4CommonValues,
+    glossary: s4Glossary,
+  },
 } as const;
 
 function resolveSeason(req: NextRequest): SeasonId {
   const s = req.nextUrl.searchParams.get("season");
-  return s === "s2" || s === "s3" ? s : DEFAULT_SEASON;
+  return s === "s2" || s === "s3" || s === "s4" ? s : DEFAULT_SEASON;
 }
 
 // Runtime data directory (persists across restarts), per season
