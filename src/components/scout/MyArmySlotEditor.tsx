@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { TEAMS } from "@/data/matchup";
-import { TEAM_GENERALS } from "@/data/generals";
 import {
+  SCOUT_DECKS,
+  SCOUT_DECK_GENERALS,
+  SCOUT_DECK_TROOPS,
   REINFORCEMENTS,
   resolveStandardDeck,
   resolveDeckByGenerals,
@@ -34,14 +35,14 @@ export function MyArmySlotEditor({ index, deck, onChange }: MyArmySlotEditorProp
 
   // 현재 값이 표준 덱 목록에 없는 커스텀 이름인지
   const isCustomSelected = Boolean(
-    deck && !(TEAMS as readonly string[]).includes(deck.name)
+    deck && !(SCOUT_DECKS as readonly string[]).includes(deck.name)
   );
 
   const options = useMemo(
     () =>
-      TEAMS.map((t) => ({
+      SCOUT_DECKS.map((t) => ({
         value: t,
-        label: `${t} (${TEAM_GENERALS[t].join("·")})`,
+        label: `${t} (${SCOUT_DECK_GENERALS[t].join("·")})`,
       })),
     []
   );
@@ -55,9 +56,11 @@ export function MyArmySlotEditor({ index, deck, onChange }: MyArmySlotEditorProp
       onChange(null);
       return;
     }
+    const defaults = SCOUT_DECK_TROOPS[value];
     onChange({
       name: value,
       reinforcement: deck?.reinforcement ?? "명함",
+      ...(defaults ? { troops: [...defaults] } : {}),
     });
   }
 

@@ -2,8 +2,10 @@
 import { getActiveSeason } from "./season";
 import * as s2 from "./s2/generals";
 import * as s3 from "./s3/generals";
+import * as s4 from "./s4/generals";
 
-const active = getActiveSeason() === "s2" ? s2 : s3;
+const season = getActiveSeason();
+const active = season === "s2" ? s2 : season === "s4" ? s4 : s3;
 
 export type { Faction } from "./s3/generals";
 export type { DeckPreset } from "./s3/generals";

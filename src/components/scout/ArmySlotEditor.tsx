@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { TEAMS } from "@/data/matchup";
-import { TEAM_GENERALS } from "@/data/generals";
 import {
+  SCOUT_DECKS,
+  SCOUT_DECK_GENERALS,
+  SCOUT_DECK_TROOPS,
   TROOP_TYPES,
   TROOP_META,
   resolveStandardDeck,
@@ -69,14 +70,26 @@ export function ArmySlotEditor({
         value: d.id,
         label: `${d.name} (${d.generals.join("·")})${d.isStandard ? " ★" : ""}`,
       }));
-    const virtual = TEAMS.filter(
-      (t) => !recordedStd.has(t) && deckHasGenerals(TEAM_GENERALS[t], tagFilter)
+    const virtual = SCOUT_DECKS.filter(
+      (t) => !recordedStd.has(t) && deckHasGenerals(SCOUT_DECK_GENERALS[t], tagFilter)
     ).map((t) => ({
       value: `std:${t}`,
-      label: `${t} (${TEAM_GENERALS[t].join("·")}) ★`,
+      label: `${t} (${SCOUT_DECK_GENERALS[t].join("·")}) ★`,
     }));
     return { recorded, virtual };
   }, [decks, tagFilter]);
+
+  // 덱을 바꾸면 표준 덱의 기본 병종으로 채운다 (기본값이 없으면 기존 병종 유지).
+  function withDeck(deck: EnemyDeck): EnemyArmy {
+    if (deck.id === army.deckId) return army;
+    const std = deck.isStandard ? resolveStandardDeck(deck.name) : null;
+    const defaults = std ? SCOUT_DECK_TROOPS[std] : undefined;
+    return {
+      ...army,
+      deckId: deck.id,
+      troops: defaults ? [...defaults] : army.troops,
+    };
+  }
 
   async function handleSelect(value: string) {
     if (value === "__add__") {
@@ -94,15 +107,16 @@ export function ArmySlotEditor({
       setBusy(true);
       const deck = await onFindOrCreateDeck({
         name: std,
-        generals: TEAM_GENERALS[std],
+        generals: SCOUT_DECK_GENERALS[std],
         isStandard: true,
         manualVerdict: null,
       });
       setBusy(false);
-      if (deck) onChange({ ...army, deckId: deck.id });
+      if (deck) onChange(withDeck(deck));
       return;
     }
-    onChange({ ...army, deckId: value });
+    const picked = decks.find((d) => d.id === value);
+    onChange(picked ? withDeck(picked) : { ...army, deckId: value });
   }
 
   const parsed = parseGenerals(newDeckGenerals);
@@ -110,7 +124,7 @@ export function ArmySlotEditor({
 
   async function confirmNewDeck() {
     const std = detectedStd;
-    const generals = std ? TEAM_GENERALS[std] : parsed;
+    const generals = std ? SCOUT_DECK_GENERALS[std] : parsed;
     if (!std && generals.length !== 3) return;
     setBusy(true);
     const deck = await onFindOrCreateDeck({
@@ -121,7 +135,7 @@ export function ArmySlotEditor({
     });
     setBusy(false);
     if (deck) {
-      onChange({ ...army, deckId: deck.id });
+      onChange(withDeck(deck));
       setAdding(false);
       setNewDeckName("");
       setNewDeckGenerals("");

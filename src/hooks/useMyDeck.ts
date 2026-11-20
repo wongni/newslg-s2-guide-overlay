@@ -23,8 +23,8 @@ function padDecks(decks?: (MyDeck | null)[]): (MyDeck | null)[] {
 }
 
 const DEFAULT: MyDeckSettings = {
-  // 초기값: 사용자 기본 (1군 조감초/명함)
-  decks: padDecks([{ name: "조감초", reinforcement: "명함" }]),
+  // 초기값: 빈 부대 (S4부터 이전 시즌 덱 기본값 없음)
+  decks: padDecks([]),
 };
 
 function readStored(): MyDeckSettings {

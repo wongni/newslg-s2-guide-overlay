@@ -161,7 +161,7 @@ export interface FlowStep {
   phase: StepPhase;
   title: string;
   desc?: string;
-  /** 9명 상태: [강유, 유비, 제갈량, 채문희, 원소, 동탁, 서성, 대교, 태사자] */
+  /** 9명 상태 (StepTracker 열 순서: 1군 3·2군 3·3군 3) */
   states: string[];
 }
 
@@ -207,6 +207,7 @@ const PHASE_META: Record<
   },
 };
 
+// 기본 9명 (1군 3·2군 3·3군 3). 페이지에서 generals로 시즌별 이름을 넘길 수 있다.
 const FLOW_GENERALS = [
   { name: "강유", army: 1 },
   { name: "유비", army: 1 },
@@ -246,7 +247,15 @@ function StateCell({ raw, tint }: { raw: string; tint: string }) {
   );
 }
 
-export function StepTracker({ steps }: { steps: FlowStep[] }) {
+export function StepTracker({
+  steps,
+  generals,
+}: {
+  steps: FlowStep[];
+  /** 9명 이름 (FLOW_GENERALS 순서). 생략하면 기본 예제 이름. */
+  generals?: readonly string[];
+}) {
+  const cols = FLOW_GENERALS.map((g, i) => ({ ...g, name: generals?.[i] ?? g.name }));
   return (
     <div className="space-y-2">
       {/* 헤더: 9명 이름 (부대 색상) */}
@@ -256,7 +265,7 @@ export function StepTracker({ steps }: { steps: FlowStep[] }) {
             <div className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 self-end">
               단계
             </div>
-            {FLOW_GENERALS.map((g) => (
+            {cols.map((g) => (
               <div
                 key={g.name}
                 className={`text-center text-[11px] font-bold ${ARMY_TINT[g.army]}`}
@@ -300,7 +309,7 @@ export function StepTracker({ steps }: { steps: FlowStep[] }) {
                 </div>
                 {/* 9명 상태 셀 */}
                 {s.states.map((raw, i) => (
-                  <StateCell key={i} raw={raw} tint={ARMY_TINT[FLOW_GENERALS[i].army]} />
+                  <StateCell key={i} raw={raw} tint={ARMY_TINT[cols[i].army]} />
                 ))}
               </div>
             );

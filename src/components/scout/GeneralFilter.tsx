@@ -4,21 +4,10 @@
 // 여러 장수를 동시에 선택할 수 있고, 선택된 장수 중 하나라도 적 덱에
 // 포함되면(OR 조건) 해당 적을 표시한다.
 
-// 필터에 노출할 장수 목록 (요청 순서 유지)
-export const FILTER_GENERALS: string[] = [
-  "조운",
-  "사마의",
-  "마초",
-  "악진",
-  "여포",
-  "주유",
-  "관우",
-  "조조",
-  "유비",
-  "주태",
-  "손권",
-  "육손",
-];
+import { KEY_GENERAL_TAGS } from "@/data/enemy-decks";
+
+// 필터에 노출할 장수 목록 (활성 시즌의 핵심 장수 태그)
+export const FILTER_GENERALS: readonly string[] = KEY_GENERAL_TAGS;
 
 interface GeneralFilterProps {
   selected: ReadonlySet<string>;

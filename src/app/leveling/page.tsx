@@ -12,103 +12,51 @@ import { useState, useMemo, useCallback, useEffect } from "react";
  *  - 소탕 1회 = 체력 20 소모
  *  - 체력 회복 = 1 / 3분  →  20/시간  →  시간당 소탕 1회분
  *  - 오미자: 체력 +60 회복, 하루 3회 사용 가능, 매일 오전 8시에 1개 선물 지급
- *  - 레벨별 필요경험치: 아래 EXP_TABLE (표에 없는 레벨은 선형 보간)
+ *  - 레벨별 필요경험치: 개척 트래킹 "부록 A · 누적 경험치 기준선(5레벨=0)"에서 계산
+ *    (L → L+1 필요경험치 = 누적[L+1] − 누적[L])
  *
- * 경험치/위험 규칙:
+ * 시뮬레이션: 소탕 1회마다 경험치를 더하고 즉시 레벨업을 반영한 뒤,
+ *            "올라간 레벨 기준"으로 다음 소탕할 토를 다시 고른다.
+ *
+ * 경험치 규칙:
  *  - 각 토는 "경험치 100% 받는 최소 레벨"(minLevel100)이 있다. 내 레벨이 이 값 이상이면 100% 경험치.
  *    (minLevel100 미입력 시 "수비군레벨 - 5" 기준으로 대체 계산)
- *  - 내 레벨 < minLevel100  →  70% 경험치
- *  - 위험(전복 실패) 판정은 수비군레벨 기준: 수비군레벨 > 내레벨 이면 도전(전복 위험) 구간.
+ *  - 내 레벨 < minLevel100  →  70% 경험치 + 전복(실패) 위험
  *
  * 경로 2가지:
- *  1) 안전 경로: 수비군레벨 <= 내 레벨인 토만 사용(전복 위험 0). 상위 토는 레벨이 오르며 열린다.
- *  2) 최소 위험 경로: 안전 경로가 체력 예산 안에서 마감까지 목표 달성이 불가할 때,
- *     허용 레벨차 G를 0부터 늘려가며(=상위 토 도전) 예산 안에 들어오는 최소 G 경로를 찾는다.
- *     G가 클수록 소탕 수는 줄지만 전복 위험이 커지므로, 최소 G = 최소 위험.
+ *  1) 안전 경로: 지금 레벨에서 100% 경험치를 받는 토 중 경험치가 가장 큰 토만 소탕.
+ *  2) 위험 경로: 안전 경로와 같되, 100% 최소레벨보다 최대 RISKY_MAX_SHORTFALL(3)레벨 낮은 상위 토의
+ *     70% 경험치가 안전 최선 토보다 RISKY_MIN_GAIN(10%) 이상 많으면 그 토에 도전한다.
  */
+
+import { getTrackingData } from "@/data/tracking-by-season";
 
 const STAMINA_PER_SWEEP = 20;
 const MINUTES_PER_STAMINA = 3;
 const OMIJA_HEAL = 60; // 오미자 1개당 체력 회복
 const OMIJA_PER_DAY = 3; // 오미자 하루 사용 가능 횟수
 const OMIJA_GIFT_HOUR = 8; // 매일 오전 8시에 1개 선물
-const SAFE_LEVEL_GAP = 5; // (수비군레벨 - 내레벨)이 이 값 이하면 경험치 100%, 초과면 70%
-const RISKY_EXP_FACTOR = 0.7; // 레벨차 5 초과 도전 시 획득 경험치 비율
+const SAFE_LEVEL_GAP = 5; // minLevel100 미입력 시: 수비군레벨 − 5 이상이면 100% 경험치
+const RISKY_EXP_FACTOR = 0.7; // 100% 최소레벨 미만 도전 시 획득 경험치 비율
+const RISKY_MAX_SHORTFALL = 3; // 위험 경로: 100% 최소레벨보다 최대 몇 레벨 낮아도 도전하는지
+const RISKY_MIN_GAIN = 1.1; // 위험 경로: 70% 경험치가 안전 최선보다 이 배수 이상일 때만 도전
+const MIN_LEVEL = 5;
+const MAX_LEVEL = 50;
 
-// 레벨 L → L+1 필요경험치 (경험치 값). 5~49 전 구간 확정 데이터(docs/level-exp.md).
-// 49 → 50이 최종 레벨업(최대 레벨 50)이며, 모든 값이 확정이라 보간이 필요 없다.
-const EXP_TABLE: [number, number][] = [
-  [5, 2000],
-  [6, 3000],
-  [7, 4000],
-  [8, 5000],
-  [9, 6000],
-  [10, 8000],
-  [11, 11000],
-  [12, 14000],
-  [13, 17000],
-  [14, 20000],
-  [15, 28000],
-  [16, 32000],
-  [17, 36000],
-  [18, 40000],
-  [19, 44000],
-  [20, 80000],
-  [21, 96000],
-  [22, 114000],
-  [23, 134000],
-  [24, 158000],
-  [25, 192000],
-  [26, 220000],
-  [27, 252000],
-  [28, 288000],
-  [29, 328000],
-  [30, 380000],
-  [31, 428000],
-  [32, 480000],
-  [33, 536000],
-  [34, 596000],
-  [35, 720000],
-  [36, 840000],
-  [37, 960000],
-  [38, 1080000],
-  [39, 1200000],
-  [40, 1500000],
-  [41, 1800000],
-  [42, 2100000],
-  [43, 2400000],
-  [44, 2700000],
-  [45, 3000000],
-  [46, 3300000],
-  [47, 3600000],
-  [48, 4000000],
-  [49, 4500000],
-];
+// 부록 A: 레벨별 누적 경험치(5레벨=0). 토지 경험치 표와 마찬가지로 시즌 공통 데이터.
+const CUMULATIVE_EXP: Record<number, number> = {
+  [MIN_LEVEL]: 0,
+  ...Object.fromEntries(
+    (getTrackingData("s4", "low").cumulativeExp ?? []).map((e) => [e.level, e.cumulativeExp])
+  ),
+};
 
+// 레벨 L → L+1 필요경험치. 부록 A 범위(5~49) 밖이면 0.
 function expNeeded(level: number): number {
-  const t = EXP_TABLE;
-  if (level <= t[0][0]) {
-    const [l0, e0] = t[0];
-    const [l1, e1] = t[1];
-    const slope = (e1 - e0) / (l1 - l0);
-    return Math.max(0, e0 + slope * (level - l0));
-  }
-  const last = t.length - 1;
-  if (level >= t[last][0]) {
-    const [l0, e0] = t[last - 1];
-    const [l1, e1] = t[last];
-    const slope = (e1 - e0) / (l1 - l0);
-    return Math.max(0, e1 + slope * (level - t[last][0]));
-  }
-  for (let i = 0; i < last; i++) {
-    const [l0, e0] = t[i];
-    const [l1, e1] = t[i + 1];
-    if (level >= l0 && level <= l1) {
-      const slope = (e1 - e0) / (l1 - l0);
-      return Math.max(0, e0 + slope * (level - l0));
-    }
-  }
-  return 0;
+  const from = CUMULATIVE_EXP[level];
+  const to = CUMULATIVE_EXP[level + 1];
+  if (from == null || to == null) return 0;
+  return to - from;
 }
 
 function countDailyGifts(now: Date, deadline: Date, hour = OMIJA_GIFT_HOUR): number {
@@ -192,6 +140,8 @@ interface BreakdownItem {
   minLevel100: number | null;
   risky: boolean;
   factor: number;
+  fromLevel: number; // 이 토를 처음 소탕한 레벨
+  toLevel: number; // 이 토를 마지막으로 소탕한 레벨
 }
 
 interface SimResult {
@@ -203,98 +153,133 @@ interface SimResult {
   targetReached: boolean;
   hasRisky: boolean;
   riskySweeps: number;
-  maxGapUsed: number; // 사용한 최대 (수비군레벨 - 내레벨)
+  maxShortfallUsed: number; // 도전 소탕 중 (100% 최소레벨 − 내 레벨)의 최댓값
 }
+
+type PathMode = "safe" | "risky";
 
 const MAX_ITER = 1_000_000;
 
-// 해당 토를 내 레벨(level)로 소탕할 때 경험치 100% 여부.
-// minLevel100이 있으면 그 값 기준, 없으면 "수비군레벨 - SAFE_LEVEL_GAP" 기준으로 대체.
-function isFullExp(toe: ToeInput, level: number): boolean {
-  if (toe.minLevel100 != null) return level >= toe.minLevel100;
-  if (toe.defender != null) return level >= (toe.defender as number) - SAFE_LEVEL_GAP;
-  return true;
+// 100% 경험치를 받는 최소 레벨. minLevel100이 없으면 "수비군레벨 - SAFE_LEVEL_GAP".
+function fullExpLevel(toe: ToeInput): number {
+  if (toe.minLevel100 != null) return toe.minLevel100;
+  if (toe.defender != null) return toe.defender - SAFE_LEVEL_GAP;
+  return MIN_LEVEL;
 }
 
-// 허용 레벨차 allowedGap 안에서 소탕당 유효경험치(경험치×보정)가 가장 높은 토를 선택하며 시뮬레이션.
+interface Pick {
+  toe: ToeInput;
+  factor: number;
+  risky: boolean;
+  shortfall: number;
+}
+
+// 현재 레벨에서 소탕할 토를 고른다.
+//  - 안전: 100% 경험치를 받는 토 중 경험치 최대 (동률이면 수비군 낮은 토)
+//  - 위험: 위 + "바로 다음 토"(100% 최소레벨이 가장 가까운 상위 토)가 RISKY_MAX_SHORTFALL 이내로 모자라고
+//          그 70% 경험치가 안전 최선의 RISKY_MIN_GAIN배 이상이면 그 토에 도전 (토 건너뛰기 없음)
+function pickToe(toeList: ToeInput[], level: number, mode: PathMode): Pick {
+  const full = toeList.filter((t) => level >= fullExpLevel(t));
+  let safeBest: ToeInput | null = null;
+  for (const t of full) {
+    if (
+      !safeBest ||
+      t.exp > safeBest.exp ||
+      (t.exp === safeBest.exp && (t.defender ?? 0) < (safeBest.defender ?? 0))
+    ) {
+      safeBest = t;
+    }
+  }
+
+  if (mode === "risky") {
+    // 도전 후보는 "바로 다음 토" 하나뿐: 아직 100%가 아닌 토 중 100% 최소레벨이 가장 낮은 토
+    // (같은 최소레벨이 여럿이면 경험치가 큰 토). 토를 건너뛰어 도전하지 않는다.
+    let next: ToeInput | null = null;
+    for (const t of toeList) {
+      if (fullExpLevel(t) <= level) continue;
+      if (
+        !next ||
+        fullExpLevel(t) < fullExpLevel(next) ||
+        (fullExpLevel(t) === fullExpLevel(next) && t.exp > next.exp)
+      ) {
+        next = t;
+      }
+    }
+    if (next) {
+      const shortfall = fullExpLevel(next) - level;
+      const eff = next.exp * RISKY_EXP_FACTOR;
+      const bar = (safeBest?.exp ?? 0) * RISKY_MIN_GAIN;
+      if (shortfall <= RISKY_MAX_SHORTFALL && eff >= bar) {
+        return { toe: next, factor: RISKY_EXP_FACTOR, risky: true, shortfall };
+      }
+    }
+  }
+
+  if (safeBest) return { toe: safeBest, factor: 1, risky: false, shortfall: 0 };
+
+  // 100% 경험치 토가 하나도 없음 → 100% 최소레벨이 가장 낮은 토를 70%로 (안전 경로도 불가피)
+  const nearest = toeList.reduce((a, b) => (fullExpLevel(b) < fullExpLevel(a) ? b : a));
+  return {
+    toe: nearest,
+    factor: RISKY_EXP_FACTOR,
+    risky: true,
+    shortfall: fullExpLevel(nearest) - level,
+  };
+}
+
+// 소탕 1회마다 레벨업을 즉시 반영하며 시뮬레이션.
 // maxSweeps 도달 시 목표 미달이라도 중단(예산 내 도달 레벨 계산용).
 function simulate(
   toeList: ToeInput[],
-  allowedGap: number,
+  mode: PathMode,
   cLevel: number,
   cExp: number,
   tLevel: number,
   maxSweeps = Infinity
 ): SimResult {
-  const pick = (level: number) => {
-    // 후보는 "내 레벨보다 높은 토"만 (동렙·이하 소탕은 실제로 거의 하지 않음).
-    const above = toeList.filter((t) => t.defender != null && (t.defender as number) > level);
-    if (above.length === 0) {
-      // 위 토가 없음(내 레벨이 모든 수비군 이상) → 경험치 최고 토를 안전(100%)하게.
-      const best = toeList.reduce((a, b) => (b.exp > a.exp ? b : a));
-      return { toe: best, factor: 1, risky: false, gap: 0 };
-    }
-    // 허용 레벨차(allowedGap) 안에 드는 상위 토. 없으면 가장 가까운 상위 토로 대체.
-    const inWindow = above.filter((t) => (t.defender as number) <= level + allowedGap);
-    let best: ToeInput;
-    let bestFactor = 1;
-    let bestGap = 0;
-    if (inWindow.length > 0) {
-      // 허용 범위 안: 유효경험치(경험치×보정)가 가장 높은 토. 동률이면 레벨차 작은(안전한) 토.
-      let bestEff = -Infinity;
-      let chosenGap = Infinity;
-      best = inWindow[0];
-      for (const t of inWindow) {
-        const gap = (t.defender as number) - level;
-        const factor = isFullExp(t, level) ? 1 : RISKY_EXP_FACTOR;
-        const eff = t.exp * factor;
-        if (eff > bestEff || (eff === bestEff && gap < chosenGap)) {
-          bestEff = eff;
-          best = t;
-          chosenGap = gap;
-          bestFactor = factor;
-        }
-      }
-      bestGap = chosenGap;
-    } else {
-      // 허용 범위 밖 → 가장 가까운 상위 토(레벨차 최소 = 전복 위험 최소).
-      best = above.reduce((a, b) =>
-        (a.defender as number) <= (b.defender as number) ? a : b
-      );
-      bestGap = (best.defender as number) - level;
-      bestFactor = isFullExp(best, level) ? 1 : RISKY_EXP_FACTOR;
-    }
-    // 도전(위험) = 경험치 100%를 못 받는 상태(내 레벨 < minLevel100). 이때 경험치 70% + 전복 위험.
-    const risky = bestFactor < 1;
-    return { toe: best, factor: bestFactor, risky, gap: bestGap };
-  };
-
   const counts = new Map<string, BreakdownItem>();
   let level = cLevel;
   let progress = cExp;
   let sweeps = 0;
   let hasRisky = false;
   let riskySweeps = 0;
-  let maxGapUsed = 0;
+  let maxShortfallUsed = 0;
+
+  // 시작 경험치가 이미 다음 레벨 이상이면 먼저 반영
+  while (level < tLevel && expNeeded(level) > 0 && progress >= expNeeded(level)) {
+    progress -= expNeeded(level);
+    level += 1;
+  }
 
   while (level < tLevel && sweeps < MAX_ITER && sweeps < maxSweeps) {
-    const { toe, factor, risky, gap } = pick(level);
+    const { toe, factor, risky, shortfall } = pickToe(toeList, level, mode);
     const gained = toe.exp * factor;
     if (gained <= 0) break;
     progress += gained;
     sweeps += 1;
-    maxGapUsed = Math.max(maxGapUsed, gap);
     if (risky) {
       hasRisky = true;
       riskySweeps += 1;
+      maxShortfallUsed = Math.max(maxShortfallUsed, shortfall);
     }
-    const key = `${toe.label}__${risky}__${factor}`;
+    const key = `${toe.label}__${risky}`;
     const entry =
-      counts.get(key) ?? { label: toe.label, count: 0, defender: toe.defender, minLevel100: toe.minLevel100, risky, factor };
+      counts.get(key) ??
+      {
+        label: toe.label,
+        count: 0,
+        defender: toe.defender,
+        minLevel100: toe.minLevel100,
+        risky,
+        factor,
+        fromLevel: level,
+        toLevel: level,
+      };
     entry.count += 1;
+    entry.toLevel = level;
     counts.set(key, entry);
 
-    while (level < tLevel && progress >= expNeeded(level)) {
+    while (level < tLevel && expNeeded(level) > 0 && progress >= expNeeded(level)) {
       progress -= expNeeded(level);
       level += 1;
     }
@@ -309,7 +294,7 @@ function simulate(
     targetReached: level >= tLevel,
     hasRisky,
     riskySweeps,
-    maxGapUsed,
+    maxShortfallUsed,
   };
 }
 
@@ -325,14 +310,13 @@ interface PlanResult {
   minutesRemaining: number;
   safe: SimResult;
   safeAchievable: boolean;
-  safeReach: SimResult | null; // 안전 경로로 예산 내 도달 가능 지점 (안전 불가 시)
-  riskyPath: SimResult | null; // 최소 위험 대안 (안전 불가 & 예산 내 가능 시)
-  mostEfficient: SimResult | null; // 도전 최대 경로 — 목표까지 전체 (완전 불가 시)
-  mostEfficientReach: SimResult | null; // 도전 최대 경로로 예산 내(마감까지) 도달 지점
-  mostEfficientCompletion: string | null; // 도전 최대 경로로 목표 레벨 도달 예상 시각
-  earliestCompletion: string | null;
+  safeReach: SimResult | null; // 안전 경로로 예산 내 도달 지점 (안전 불가 시)
+  safeCompletion: string; // 안전 경로 목표 도달 예상 시각
+  risky: SimResult | null; // 위험 경로 (도전이 의미 있는 구간이 없으면 null)
+  riskyAchievable: boolean;
+  riskyReach: SimResult | null; // 위험 경로로 예산 내 도달 지점 (위험도 불가 시)
+  riskyCompletion: string | null; // 위험 경로 목표 도달 예상 시각
 }
-
 export default function LevelingPage() {
   const [currentLevel, setCurrentLevel] = useState(DEFAULT_FORM.currentLevel);
   const [currentExp, setCurrentExp] = useState(DEFAULT_FORM.currentExp);
@@ -429,6 +413,10 @@ export default function LevelingPage() {
       setError("현재 레벨과 목표 레벨을 입력해주세요.");
       return;
     }
+    if (cLevel < MIN_LEVEL) {
+      setError(`현재 레벨은 ${MIN_LEVEL} 이상이어야 합니다.`);
+      return;
+    }
     if (tLevel <= cLevel) {
       setError("목표 레벨은 현재 레벨보다 높아야 합니다.");
       return;
@@ -480,10 +468,6 @@ export default function LevelingPage() {
     let totalExpNeeded = Math.max(0, expNeeded(cLevel) - cExp);
     for (let L = cLevel + 1; L < tLevel; L++) totalExpNeeded += expNeeded(L);
 
-    // ---- 안전 경로 (G = 0) ----
-    const safe = simulate(toeList, 0, cLevel, cExp, tLevel);
-    const safeAchievable = safe.requiredStamina <= budgetStamina;
-
     // 특정 소탕 수(체력)를 확보하는 데 걸리는 예상 시각(근사):
     //  즉시 사용 가능 체력(현재+오미자) 초과분을 자연 회복(1/3분)으로 충당한다고 가정.
     const instantStamina = cStam + staminaFromOmija;
@@ -499,39 +483,23 @@ export default function LevelingPage() {
       });
     };
 
-    let safeReach: SimResult | null = null;
-    let riskyPath: SimResult | null = null;
-    let mostEfficient: SimResult | null = null;
-    let mostEfficientReach: SimResult | null = null;
-    let mostEfficientCompletion: string | null = null;
+    // ---- ① 안전 경로: 100% 경험치 토만 ----
+    const safe = simulate(toeList, "safe", cLevel, cExp, tLevel);
+    const safeAchievable = safe.requiredStamina <= budgetStamina;
+    const safeReach = safeAchievable
+      ? null
+      : simulate(toeList, "safe", cLevel, cExp, tLevel, budgetSweeps);
 
-    if (!safeAchievable) {
-      // 예산 내에서 안전 경로로 어디까지 도달?
-      safeReach = simulate(toeList, 0, cLevel, cExp, tLevel, budgetSweeps);
-
-      // 최소 위험 경로 탐색: G를 1부터 늘려 예산 안에 들어오는 최소 G
-      const maxDefender = Math.max(0, ...toeList.map((t) => t.defender ?? 0));
-      const maxG = Math.max(1, maxDefender - cLevel);
-      for (let G = 1; G <= maxG; G++) {
-        const r = simulate(toeList, G, cLevel, cExp, tLevel);
-        if (r.requiredStamina <= budgetStamina) {
-          riskyPath = r;
-          break;
-        }
-      }
-      // 최소 위험 경로가 없으면(도전 최대로도 예산 초과):
-      //  - 목표까지 전체 최대 도전 경로
-      //  - 예산 내(마감까지) 도달 지점
-      //  - 목표 레벨 도달 예상 시각
-      if (!riskyPath) {
-        mostEfficient = simulate(toeList, maxG, cLevel, cExp, tLevel);
-        mostEfficientReach = simulate(toeList, maxG, cLevel, cExp, tLevel, budgetSweeps);
-        mostEfficientCompletion = completionAt(mostEfficient.requiredStamina);
-      }
-    }
-
-    // 가장 빠른 완료 시각(근사): 안전 경로 달성 가능 시
-    const earliestCompletion = safeAchievable ? completionAt(safe.requiredStamina) : null;
+    // ---- ② 위험 경로: 의미 있는 구간에서 70% 도전 ----
+    const riskySim = simulate(toeList, "risky", cLevel, cExp, tLevel);
+    // 안전 경로보다 소탕 수가 줄지 않으면(도전할 구간이 없으면) 표시하지 않는다.
+    const risky =
+      riskySim.hasRisky && riskySim.requiredSweeps < safe.requiredSweeps ? riskySim : null;
+    const riskyAchievable = risky != null && risky.requiredStamina <= budgetStamina;
+    const riskyReach =
+      risky && !riskyAchievable
+        ? simulate(toeList, "risky", cLevel, cExp, tLevel, budgetSweeps)
+        : null;
 
     setResult({
       totalExpNeeded,
@@ -546,11 +514,11 @@ export default function LevelingPage() {
       safe,
       safeAchievable,
       safeReach,
-      riskyPath,
-      mostEfficient,
-      mostEfficientReach,
-      mostEfficientCompletion,
-      earliestCompletion,
+      safeCompletion: completionAt(safe.requiredStamina),
+      risky,
+      riskyAchievable,
+      riskyReach,
+      riskyCompletion: risky ? completionAt(risky.requiredStamina) : null,
     });
   }, [currentLevel, targetLevel, currentExp, currentStamina, omija, deadline, toes]);
 
@@ -605,11 +573,11 @@ export default function LevelingPage() {
         <div>
           <h1 className="text-lg font-bold">🎯 레벨업 플래너</h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            전쟁 발발 시각에서 역산해, 목표 레벨까지 도달하는 <b>최적 소탕 경로</b>를 계산합니다.
-            보통 <b>내 레벨보다 높은 토</b>를 소탕하며, 각 토의
-            <b> “100% 경험치 최소레벨” 이상이면 100% 경험치</b>, 미만이면 <b>70% + 전복(실패) 위험</b>입니다.
-            안전 경로는 <b>가장 가까운(레벨차 최소) 상위 토</b>만 골라 전복 위험을 최소화하고,
-            마감까지 부족하면 <b>최소 위험 경로</b>를 함께 제시합니다. (최대 레벨 50)
+            전쟁 발발 시각에서 역산해, 목표 레벨까지 도달하는 <b>소탕 경로</b>를 계산합니다.
+            소탕할 때마다 레벨업을 바로 반영해 <b>올라간 레벨 기준으로 다음 토를 다시 고릅니다</b>.
+            <b>안전 경로</b>는 지금 레벨에서 <b>100% 경험치</b>를 받는 토 중 경험치가 가장 큰 토만 소탕합니다.
+            <b>위험 경로</b>는 100% 최소레벨보다 <b>{RISKY_MAX_SHORTFALL}레벨 이내로 낮아도</b>, 70% 경험치가
+            안전 최선보다 <b>{Math.round((RISKY_MIN_GAIN - 1) * 100)}% 이상 많으면</b> <b>바로 다음 토</b>에 도전합니다(토 건너뛰기 없음). (최대 레벨 {MAX_LEVEL})
           </p>
         </div>
 
@@ -673,11 +641,11 @@ export default function LevelingPage() {
             {/* 상태 배너 */}
             {result.safeAchievable ? (
               <div className="px-3 py-2.5 rounded-md text-sm font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
-                ✅ 마감까지 안전하게 목표 레벨 달성 가능
+                ✅ 마감까지 안전 경로로 목표 레벨 달성 가능
               </div>
-            ) : result.riskyPath ? (
+            ) : result.riskyAchievable ? (
               <div className="px-3 py-2.5 rounded-md text-sm font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
-                ⚠️ 안전 경로만으론 부족 — 최소 위험 경로로 달성 가능
+                ⚠️ 안전 경로만으론 부족 — 위험 경로로 달성 가능
               </div>
             ) : (
               <div className="px-3 py-2.5 rounded-md text-sm font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
@@ -718,40 +686,55 @@ export default function LevelingPage() {
                   <Row k="확보 가능 총 체력" v={`${fmt(result.budgetStamina)}`} strong />
                 </Section>
 
-                <PathSection title="① 안전 경로 (레벨차 최소)" sim={result.safe} budgetStamina={result.budgetStamina} fmt={fmt} />
-                {!result.safeAchievable && result.safeReach && (
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 -mt-1">
-                    → 예산 내 도달 가능:{" "}
-                    <b>
-                      {result.safeReach.reachedLevel}레벨 (경험치 {fmt(Math.round(result.safeReach.reachedProgress))})
-                    </b>
-                  </p>
-                )}
+                <PathSection title="① 안전 경로 (100% 경험치만)" sim={result.safe} budgetStamina={result.budgetStamina} fmt={fmt} />
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 -mt-1">
+                  {result.safeReach ? (
+                    <>
+                      → 마감까지 도달:{" "}
+                      <b>
+                        {result.safeReach.reachedLevel}레벨 (경험치 {fmt(Math.round(result.safeReach.reachedProgress))})
+                      </b>
+                      {" "}· 목표 도달 예상 {result.safeCompletion}
+                    </>
+                  ) : (
+                    <>→ 목표 도달 예상 <b>{result.safeCompletion}</b></>
+                  )}
+                </p>
 
-                {result.riskyPath && (
-                  <PathSection
-                    title="② 최소 위험 경로 (도전 포함)"
-                    sim={result.riskyPath}
-                    budgetStamina={result.budgetStamina}
-                    fmt={fmt}
-                    emphasizeRisk
-                  />
-                )}
-
-                {result.mostEfficient && (
+                {result.risky ? (
                   <>
                     <PathSection
-                      title="③ 최대 도전 경로"
-                      sim={result.mostEfficient}
+                      title={`② 위험 경로 (최대 ${RISKY_MAX_SHORTFALL}레벨 낮게 70% 도전)`}
+                      sim={result.risky}
                       budgetStamina={result.budgetStamina}
                       fmt={fmt}
                       emphasizeRisk
                     />
-                    <p className="text-[10px] text-zinc-400">
-                      ※ 도달 예상 시각은 현재+오미자 체력을 즉시 쓰고 나머지를 자연 회복(1당 3분)으로 채운다고 가정한 근사치입니다.
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 -mt-1">
+                      {result.riskyReach ? (
+                        <>
+                          → 마감까지 도달:{" "}
+                          <b>
+                            {result.riskyReach.reachedLevel}레벨 (경험치 {fmt(Math.round(result.riskyReach.reachedProgress))})
+                          </b>
+                          {" "}· 목표 도달 예상 {result.riskyCompletion}
+                        </>
+                      ) : (
+                        <>
+                          → 목표 도달 예상 <b>{result.riskyCompletion}</b> · 안전 경로보다 소탕{" "}
+                          {fmt(result.safe.requiredSweeps - result.risky.requiredSweeps)}회 적음
+                        </>
+                      )}
                     </p>
                   </>
+                ) : (
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    ② 위험 경로: 이 구간에는 70% 도전이 안전 경로보다 유리한 토가 없습니다.
+                  </p>
                 )}
+                <p className="text-[10px] text-zinc-400">
+                  ※ 도달 예상 시각은 현재+오미자 체력을 즉시 쓰고 나머지를 자연 회복(1당 3분)으로 채운다고 가정한 근사치입니다.
+                </p>
               </div>
             )}
           </div>
@@ -795,10 +778,9 @@ export default function LevelingPage() {
                 </div>
               ))}
               <p className="text-[11px] text-zinc-400">
-                소탕 후보는 <b>내 레벨보다 높은 토</b>입니다(동렙·이하는 제외). 내 레벨이 <b>“100% 경험치 최소레벨” 이상이면 100% 경험치</b>,
-                미만이면 <b>70% + 전복 위험</b>입니다. (100% 경험치 최소레벨을 비워두면 “수비군레벨 − 5”로 대체 계산)
-                안전 경로는 레벨차가 가장 작은 상위 토를 고르고, 레벨이 오르면 상위 토로 전환합니다.
-                (수비군 레벨을 비워둔 토는 후보에서 제외)
+                소탕 후보는 획득경험치를 입력한 모든 토입니다. 내 레벨이 <b>“100% 경험치 최소레벨” 이상이면 100% 경험치</b>,
+                미만이면 <b>70% + 전복 위험</b>입니다. (100% 경험치 최소레벨을 비워두면 “수비군레벨 − {SAFE_LEVEL_GAP}”로 대체 계산)
+                안전 경로는 100% 경험치 토 중 경험치가 가장 큰 토를 고르고, 레벨이 오르면 다시 고릅니다.
               </p>
             </div>
           )}
@@ -858,38 +840,34 @@ function RecommendedSummary({
   result: PlanResult;
   fmt: (n: number) => string;
 }) {
-  const rec = result.safeAchievable
-    ? result.safe
-    : result.riskyPath ?? result.mostEfficient;
-  if (!rec || rec.requiredSweeps === 0) return null;
+  // 추천: 안전 달성 가능 → 안전 / 위험만 가능 → 위험 / 둘 다 불가 → 더 빠른 경로(위험 있으면 위험)
+  const useRisky = !result.safeAchievable && result.risky != null;
+  const rec = useRisky ? result.risky! : result.safe;
+  if (rec.requiredSweeps === 0) return null;
 
-  const kind = result.safeAchievable
-    ? "안전 경로"
-    : result.riskyPath
-    ? "최소 위험 경로"
-    : "최대 도전 경로";
+  const kind = useRisky ? "위험 경로" : "안전 경로";
+  const achievable = useRisky ? result.riskyAchievable : result.safeAchievable;
+  const reach = useRisky ? result.riskyReach : result.safeReach;
+  const completion = useRisky ? result.riskyCompletion : result.safeCompletion;
 
   // 상태별 세 번째 지표 & 헤드라인
   let thirdLabel = "여유 체력";
   let thirdValue = fmt(result.budgetStamina - rec.requiredStamina);
   let headline: React.ReactNode = null;
-  if (result.safeAchievable) {
-    headline = result.earliestCompletion ? (
-      <>🕒 가장 빠른 달성 <b>{result.earliestCompletion}</b></>
-    ) : null;
-  } else if (result.riskyPath) {
-    thirdLabel = "위험 소탕";
-    thirdValue = `${fmt(rec.riskySweeps)}회`;
+  if (achievable) {
     headline = (
       <>
-        ⚠️ 최대 <b>+{rec.maxGapUsed}레벨</b> 도전 · 여유 체력 {fmt(result.budgetStamina - rec.requiredStamina)}
+        {useRisky && (
+          <>⚠️ 70% 도전 {fmt(rec.riskySweeps)}회 (최대 {rec.maxShortfallUsed}레벨 낮게) · </>
+        )}
+        🕒 가장 빠른 달성 <b>{completion}</b>
       </>
     );
   } else {
     thirdLabel = "마감 도달";
-    thirdValue = result.mostEfficientReach ? `${result.mostEfficientReach.reachedLevel}레벨` : "-";
-    headline = result.mostEfficientCompletion ? (
-      <>❗ 마감 내 불가 · 목표 도달 예상 <b>{result.mostEfficientCompletion}</b></>
+    thirdValue = reach ? `${reach.reachedLevel}레벨` : "-";
+    headline = completion ? (
+      <>❗ 마감 내 불가 · 목표 도달 예상 <b>{completion}</b></>
     ) : null;
   }
 
@@ -919,8 +897,9 @@ function RecommendedSummary({
             <span className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-200">
               <span className={`inline-block w-2.5 h-2.5 rounded-full ${b.risky ? "bg-red-500" : TOE_COLORS[i % TOE_COLORS.length]}`} />
               {b.label}
-              {b.defender != null && <span className="text-zinc-400"> 수비군 {b.defender}</span>}
-              {b.minLevel100 != null && <span className="text-zinc-400"> · 100%경험치 {b.minLevel100}렙</span>}
+              <span className="text-zinc-400">
+                {" "}{b.fromLevel === b.toLevel ? `${b.fromLevel}렙` : `${b.fromLevel}~${b.toLevel}렙`}
+              </span>
               {b.risky && <span className="text-red-500"> ⚠️70%</span>}
             </span>
             <span className="font-medium text-zinc-800 dark:text-zinc-200">{fmt(b.count)}회</span>
@@ -971,7 +950,10 @@ function PathSection({
     <Section title={title}>
       <Row k="필요 소탕 횟수" v={`${fmt(sim.requiredSweeps)}회`} />
       <Row k="필요 총 체력" v={`${fmt(sim.requiredStamina)} ${within ? "(예산 내)" : "(예산 초과)"}`} />
-      <Row k="사용 레벨차" v={sim.maxGapUsed > 0 ? `내 레벨 +최대 ${sim.maxGapUsed}` : "내 레벨 이하"} />
+      <Row
+        k="70% 도전"
+        v={sim.hasRisky ? `${fmt(sim.riskySweeps)}회 · 100% 최소레벨보다 최대 ${sim.maxShortfallUsed}레벨 낮게` : "없음"}
+      />
       <div className="pt-1 space-y-0.5">
         {sim.breakdown.map((b) => (
           <div
@@ -980,6 +962,9 @@ function PathSection({
           >
             <span>
               {b.label}
+              <span className={b.risky ? "" : "text-zinc-400"}>
+                {" "}[{b.fromLevel === b.toLevel ? `${b.fromLevel}렙` : `${b.fromLevel}~${b.toLevel}렙`}]
+              </span>
               {b.defender != null && <span className={b.risky ? "" : "text-zinc-400"}> (수비군 {b.defender})</span>}
               {b.minLevel100 != null && <span className={b.risky ? "" : "text-zinc-400"}> (100%경험치 {b.minLevel100}렙)</span>}
               {b.risky ? ` ⚠️도전${b.factor < 1 ? " 70%" : ""}` : ""}
@@ -991,11 +976,11 @@ function PathSection({
       {emphasizeRisk && sim.hasRisky ? (
         <p className="text-[11px] text-red-500 pt-1">
           ⚠️ 도전 표시 소탕은 내 레벨이 해당 토의 “100% 경험치 최소레벨”에 못 미쳐 경험치 70% + 전복(실패) 위험이 있습니다.
-          위험 소탕 {fmt(sim.riskySweeps)}회 · 최대 레벨차 {sim.maxGapUsed}.
+          위험 소탕 {fmt(sim.riskySweeps)}회 · 최대 {sim.maxShortfallUsed}레벨 미달.
         </p>
       ) : !sim.hasRisky ? (
         <p className="text-[11px] text-zinc-500 dark:text-zinc-400 pt-1">
-          모든 소탕이 100% 경험치 구간입니다. 레벨이 오르면 상위 토로 전환합니다.
+          모든 소탕이 100% 경험치 구간입니다. 레벨이 오르면 더 높은 토로 전환합니다.
         </p>
       ) : null}
     </Section>

@@ -5,6 +5,7 @@ import {
   TEAMS,
   MATCHUP_MATRIX,
   MATCHUP_META,
+  MATCHUP_RATES,
   deckUrl,
   teamLabel,
   type MatchupResult,
@@ -14,11 +15,12 @@ import { TEAM_GENERALS, DECK_PRESETS, canBuildTeam, missingGenerals } from "@/da
 import { useOwnedGenerals } from "@/hooks/useOwnedGenerals";
 import { GeneralSelector } from "@/components/GeneralSelector";
 
-function CellContent({ result }: { result: MatchupResult }) {
+// 원본 표기(승률)가 있으면 그것을, 없으면 결과 라벨을 보여준다.
+function CellContent({ result, rate }: { result: MatchupResult; rate?: string }) {
   const meta = MATCHUP_META[result];
   return (
-    <span className="text-xs font-bold leading-none">
-      {meta.label}
+    <span className="text-xs font-bold leading-none whitespace-nowrap">
+      {rate ?? meta.label}
     </span>
   );
 }
@@ -55,6 +57,7 @@ function ScoreBadge({ team }: { team: TeamName }) {
 
   MATCHUP_MATRIX[idx].forEach((r, ci) => {
     if (ci === idx) return; // 자기 자신 제외
+    if (r === "부족") return; // 데이터 부족 칸 제외
     total += MATCHUP_META[r].score;
     if (r === "완승" || r === "우세") wins++;
     else if (r === "비등") draws++;
@@ -79,6 +82,16 @@ function ScoreBadge({ team }: { team: TeamName }) {
     </div>
   );
 }
+
+// 범례: 기본 5단계 + 매트릭스에 데이터 부족 칸이 있으면 추가
+const LEGEND_RESULTS: MatchupResult[] = [
+  "완승",
+  "우세",
+  "비등",
+  "열세",
+  "완패",
+  ...(MATCHUP_MATRIX.some((row) => row.includes("부족")) ? (["부족"] as const) : []),
+];
 
 export default function MatchupPage() {
   const [highlightRow, setHighlightRow] = useState<number | null>(null);
@@ -150,7 +163,7 @@ export default function MatchupPage() {
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2 items-center">
             <span className="text-xs text-zinc-500 dark:text-zinc-400 mr-1">상성:</span>
-            {(["완승", "우세", "비등", "열세", "완패"] as MatchupResult[]).map((r) => {
+            {LEGEND_RESULTS.map((r) => {
               const meta = MATCHUP_META[r];
               return (
                 <span
@@ -158,7 +171,9 @@ export default function MatchupPage() {
                   className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold"
                   style={{ backgroundColor: meta.bg, color: meta.text }}
                 >
-                  {meta.label} ({meta.score > 0 ? `+${meta.score}` : meta.score})
+                  {r === "부족"
+                    ? "데이터 부족 (제외)"
+                    : `${meta.label} (${meta.score > 0 ? `+${meta.score}` : meta.score})`}
                 </span>
               );
             })}
@@ -170,7 +185,7 @@ export default function MatchupPage() {
               <span className="font-bold text-zinc-700 dark:text-zinc-300">
                 세로(행) 헤더 아래 &quot;○승 ○무 ○패&quot;
               </span>{" "}
-              = 해당 조합이 나머지 8개 조합을 <span className="font-bold">공격</span>했을 때 결과 (완승·우세=승, 비등=무, 열세·완패=패)
+              = 해당 조합이 나머지 {TEAMS.length - 1}개 조합을 <span className="font-bold">공격</span>했을 때 결과 (완승·우세=승, 비등=무, 열세·완패=패)
             </p>
             <p>
               <span className="font-bold text-zinc-700 dark:text-zinc-300">
@@ -260,6 +275,7 @@ export default function MatchupPage() {
                     const isHighlighted =
                       highlightRow === ri || highlightCol === ci;
                     const isDiagonal = ri === ci;
+                    const rate = MATCHUP_RATES?.[ri]?.[ci];
 
                     return (
                       <td
@@ -272,9 +288,9 @@ export default function MatchupPage() {
                             : ""
                         }`}
                         style={{ backgroundColor: meta.bg, color: meta.text }}
-                        title={`${teamLabel(attacker)}(공) vs ${teamLabel(TEAMS[ci])}(방) = ${meta.label}`}
+                        title={`${teamLabel(attacker)}(공) vs ${teamLabel(TEAMS[ci])}(방) = ${rate ? `${rate} · ` : ""}${meta.label}`}
                       >
-                        <CellContent result={result} />
+                        <CellContent result={result} rate={rate} />
                       </td>
                     );
                   })}
