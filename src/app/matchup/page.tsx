@@ -15,12 +15,12 @@ import { TEAM_GENERALS, DECK_PRESETS, canBuildTeam, missingGenerals } from "@/da
 import { useOwnedGenerals } from "@/hooks/useOwnedGenerals";
 import { GeneralSelector } from "@/components/GeneralSelector";
 
-// 원본 표기(승률)가 있으면 그것을, 없으면 결과 라벨을 보여준다.
-function CellContent({ result, rate }: { result: MatchupResult; rate?: string }) {
+// 칸에는 결과 라벨(완승·우세·비등·열세·완패)을 보여준다. 원본 승률은 마우스를 올리면 툴팁으로 보인다.
+function CellContent({ result }: { result: MatchupResult }) {
   const meta = MATCHUP_META[result];
   return (
     <span className="text-xs font-bold leading-none whitespace-nowrap">
-      {rate ?? meta.label}
+      {result === "부족" ? "—" : meta.label}
     </span>
   );
 }
@@ -113,7 +113,7 @@ export default function MatchupPage() {
 
   return (
     <div className="text-zinc-900 dark:text-zinc-100">
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-5">
+      <main className="max-w-7xl mx-auto px-4 py-6 space-y-5">
         {/* Page title */}
         <h1 className="text-lg font-bold">⚔️ 조합 상성표</h1>
 
@@ -214,7 +214,7 @@ export default function MatchupPage() {
                 {TEAMS.map((team, ci) => (
                   <th
                     key={team}
-                    className={`px-1 py-2 text-xs font-bold border-b-2 border-r border-zinc-400 dark:border-zinc-500 min-w-[72px] cursor-pointer transition-colors ${
+                    className={`px-1 py-2 text-xs font-bold border-b-2 border-r border-zinc-400 dark:border-zinc-500 min-w-[60px] cursor-pointer transition-colors ${
                       highlightCol === ci
                         ? "bg-amber-100 dark:bg-amber-900/40"
                         : "bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800"
@@ -290,7 +290,7 @@ export default function MatchupPage() {
                         style={{ backgroundColor: meta.bg, color: meta.text }}
                         title={`${teamLabel(attacker)}(공) vs ${teamLabel(TEAMS[ci])}(방) = ${rate ? `${rate} · ` : ""}${meta.label}`}
                       >
-                        <CellContent result={result} rate={rate} />
+                        <CellContent result={result} />
                       </td>
                     );
                   })}

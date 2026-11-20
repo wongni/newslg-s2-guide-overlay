@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { TrackingData, TrackingRow, TrackingUnitState } from "@/types/tracking";
 
 const DEFAULT_STORAGE_KEY = "s3-pioneer-tracking-progress";
@@ -379,12 +379,242 @@ function ActionBadge({ action }: { action: TrackingRow["action"] }) {
   );
 }
 
+/** 단계 카드 목록 (모바일 화면과 오버레이에서 사용). */
+function TrackingCards({
+  data,
+  completed,
+  toggle,
+  unitLabels,
+  levelDecimals,
+  stickyClass = "top-14",
+  currentIndex = -1,
+}: {
+  data: TrackingData;
+  completed: Set<number>;
+  toggle: (index: number) => void;
+  unitLabels: string[];
+  levelDecimals: number;
+  stickyClass?: string;
+  currentIndex?: number;
+}) {
+  return (
+    <>
+      {data.rows.map((row, i) => {
+        const isDone = completed.has(i);
+        const prevBase = i > 0 ? baseChapter(data.rows[i - 1].chapter) : null;
+        const curBase = baseChapter(row.chapter);
+        const isGroupStart = prevBase === null || prevBase !== curBase;
+        const hasUnitChange = row.units.some(
+          (u) => (u.lv !== undefined || u.hp !== undefined) && !u.carried
+        );
+        return (
+          <div key={i} data-row-index={i}>
+            {isGroupStart && (
+              <div className={`sticky ${stickyClass} z-10 -mx-4 px-4 py-1.5 mt-3 mb-1 bg-zinc-200/95 dark:bg-zinc-800/95 backdrop-blur text-sm font-bold text-zinc-700 dark:text-zinc-200 border-y border-zinc-300 dark:border-zinc-700`}>
+                {curBase}
+              </div>
+            )}
+            <div
+              className={`rounded-lg border p-3 ${
+                row.milestone
+                  ? "border-amber-300 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-950/20"
+                  : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50"
+              } ${isDone ? "opacity-50" : ""} ${i === currentIndex ? "ring-2 ring-amber-400" : ""}`}
+            >
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={isDone}
+                  onChange={() => toggle(i)}
+                  className="w-4 h-4 mt-1 accent-green-600 cursor-pointer shrink-0"
+                  aria-label={`${row.chapter} ${row.action} 완료`}
+                />
+                <div className="flex-1 min-w-0">
+                  {/* 헤더: 챕터 + 행동 + 부대 */}
+                  <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+                    <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                      {row.chapter}
+                    </span>
+                    <ActionBadge action={row.action} />
+                    {extractUnitTag(row.target).unitTag && (
+                      <UnitTag tag={extractUnitTag(row.target).unitTag!} />
+                    )}
+                  </div>
+
+                  {/* 라벨 + 값 행들 */}
+                  <div className="space-y-1 text-xs">
+                    {row.target && (
+                      <div className="flex items-baseline gap-2">
+                        <span className="w-11 shrink-0 text-zinc-400 dark:text-zinc-500">
+                          대상
+                        </span>
+                        <span className="font-semibold text-[13px]">
+                          <TargetCell raw={row.target} />
+                        </span>
+                      </div>
+                    )}
+                    {row.reclaimStatus && (
+                      <div className="flex items-baseline gap-2">
+                        <span className="w-11 shrink-0 text-zinc-400 dark:text-zinc-500">
+                          개간지
+                        </span>
+                        <LandStatus raw={row.reclaimStatus} inline />
+                      </div>
+                    )}
+                    {row.occupyStatus && (
+                      <div className="flex items-baseline gap-2">
+                        <span className="w-11 shrink-0 text-zinc-400 dark:text-zinc-500">
+                          점령지
+                        </span>
+                        <LandStatus raw={row.occupyStatus} inline />
+                      </div>
+                    )}
+                    {(hasUnitChange || row.chicken !== undefined) && (
+                      <div className="flex items-baseline gap-2">
+                        <span className="w-11 shrink-0 text-zinc-400 dark:text-zinc-500">
+                          부대
+                        </span>
+                        <span className="flex gap-1.5 flex-wrap">
+                          {row.units.map((unit, u) => {
+                            const has =
+                              unit.lv !== undefined || unit.hp !== undefined;
+                            if (!has) return null;
+                            return (
+                              <span
+                                key={u}
+                                className="inline-flex items-center gap-1 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 px-1.5 py-0.5"
+                              >
+                                <span
+                                  className={`text-[10px] font-semibold ${
+                                    UNIT_TAG_STYLE[unitLabels[u]] ??
+                                    "text-zinc-500 dark:text-zinc-400"
+                                  }`}
+                                >
+                                  {unitLabels[u]}
+                                </span>
+                                <UnitCell unit={unit} decimals={levelDecimals} />
+                              </span>
+                            );
+                          })}
+                          {row.chicken !== undefined && (
+                            <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 font-mono">
+                              🍗 {fmtChicken(row.chicken)}
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    {row.tip && (
+                      <div className="flex items-baseline gap-2 pt-0.5">
+                        <span className="w-11 shrink-0 text-zinc-400 dark:text-zinc-500">
+                          팁
+                        </span>
+                        <span className="text-sky-700 dark:text-sky-400 leading-snug">
+                          {row.tip}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+/** 오버레이 화면: 진행률 + 단계 카드. 첫 미완료 단계를 강조하고 그 위치로 스크롤한다. */
+function CompactTracking({
+  data,
+  completed,
+  toggle,
+  reset,
+  unitLabels,
+  levelDecimals,
+  doneCount,
+  total,
+  percent,
+}: {
+  data: TrackingData;
+  completed: Set<number>;
+  toggle: (index: number) => void;
+  reset: () => void;
+  unitLabels: string[];
+  levelDecimals: number;
+  doneCount: number;
+  total: number;
+  percent: number;
+}) {
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const currentIndex = data.rows.findIndex((_, i) => !completed.has(i));
+
+  // 오버레이 창에서 확인 창을 띄운다 (메인 창 confirm은 PiP 뒤에 가려짐)
+  const handleReset = () => {
+    const win = listRef.current?.ownerDocument.defaultView ?? window;
+    if (win.confirm(`진행 체크 ${doneCount}개를 모두 해제할까요?`)) {
+      reset();
+      listRef.current?.ownerDocument.defaultView?.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  // 현재 단계가 바뀌면(체크하면) 다음 단계로 스크롤
+  useEffect(() => {
+    if (currentIndex < 0) return;
+    const el = listRef.current?.querySelector(`[data-row-index="${currentIndex}"]`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [currentIndex]);
+
+  return (
+    <div className="text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-950 min-h-screen">
+      <div className="sticky top-0 z-20 px-3 py-2 bg-white/95 dark:bg-zinc-950/95 backdrop-blur border-b border-zinc-200 dark:border-zinc-800">
+        <div className="text-sm font-bold truncate">🧭 {data.title}</div>
+        <div className="flex items-center gap-2 mt-1">
+          <div className="flex-1 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+            <div className="h-full bg-amber-500 transition-all" style={{ width: `${percent}%` }} />
+          </div>
+          <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+            {doneCount}/{total}
+          </span>
+          <button
+            onClick={handleReset}
+            disabled={doneCount === 0}
+            className="text-[11px] px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-40 transition-colors"
+          >
+            초기화
+          </button>
+        </div>
+      </div>
+      <div ref={listRef} className="px-4 pb-4 space-y-2">
+        <TrackingCards
+          data={data}
+          completed={completed}
+          toggle={toggle}
+          unitLabels={unitLabels}
+          levelDecimals={levelDecimals}
+          stickyClass="top-[52px]"
+          currentIndex={currentIndex}
+        />
+        {currentIndex < 0 && (
+          <p className="text-center text-sm text-green-600 dark:text-green-400 py-4">
+            ✅ 모든 단계를 완료했습니다
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function TrackingTable({
   data,
   storageKey = DEFAULT_STORAGE_KEY,
+  compact = false,
 }: {
   data: TrackingData;
   storageKey?: string;
+  /** 오버레이(PiP)용: 진행률과 단계 카드만, 현재 단계로 자동 스크롤 */
+  compact?: boolean;
 }) {
   const { completed, toggle, reset } = useTrackingProgress(storageKey);
   const [expOpen, setExpOpen] = useState(false);
@@ -394,6 +624,22 @@ export function TrackingTable({
   const percent = total > 0 ? Math.round((doneCount / total) * 100) : 0;
   const unitLabels = data.unitLabels ?? UNIT_LABELS;
   const levelDecimals = data.levelDecimals ?? 2;
+
+  if (compact) {
+    return (
+      <CompactTracking
+        data={data}
+        completed={completed}
+        toggle={toggle}
+        reset={reset}
+        unitLabels={unitLabels}
+        levelDecimals={levelDecimals}
+        doneCount={doneCount}
+        total={total}
+        percent={percent}
+      />
+    );
+  }
 
   return (
     <div className="text-zinc-900 dark:text-zinc-100">
@@ -721,128 +967,13 @@ export function TrackingTable({
 
         {/* 모바일 카드 */}
         <div className="md:hidden space-y-2">
-          {data.rows.map((row, i) => {
-            const isDone = completed.has(i);
-            const prevBase = i > 0 ? baseChapter(data.rows[i - 1].chapter) : null;
-            const curBase = baseChapter(row.chapter);
-            const isGroupStart = prevBase === null || prevBase !== curBase;
-            const hasUnitChange = row.units.some(
-              (u) => (u.lv !== undefined || u.hp !== undefined) && !u.carried
-            );
-            return (
-              <div key={i}>
-                {isGroupStart && (
-                  <div className="sticky top-14 z-10 -mx-4 px-4 py-1.5 mt-3 mb-1 bg-zinc-200/95 dark:bg-zinc-800/95 backdrop-blur text-sm font-bold text-zinc-700 dark:text-zinc-200 border-y border-zinc-300 dark:border-zinc-700">
-                    {curBase}
-                  </div>
-                )}
-                <div
-                  className={`rounded-lg border p-3 ${
-                    row.milestone
-                      ? "border-amber-300 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-950/20"
-                      : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50"
-                  } ${isDone ? "opacity-50" : ""}`}
-                >
-                  <div className="flex items-start gap-2">
-                    <input
-                      type="checkbox"
-                      checked={isDone}
-                      onChange={() => toggle(i)}
-                      className="w-4 h-4 mt-1 accent-green-600 cursor-pointer shrink-0"
-                      aria-label={`${row.chapter} ${row.action} 완료`}
-                    />
-                    <div className="flex-1 min-w-0">
-                      {/* 헤더: 챕터 + 행동 + 부대 */}
-                      <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
-                        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                          {row.chapter}
-                        </span>
-                        <ActionBadge action={row.action} />
-                        {extractUnitTag(row.target).unitTag && (
-                          <UnitTag tag={extractUnitTag(row.target).unitTag!} />
-                        )}
-                      </div>
-
-                      {/* 라벨 + 값 행들 */}
-                      <div className="space-y-1 text-xs">
-                        {row.target && (
-                          <div className="flex items-baseline gap-2">
-                            <span className="w-11 shrink-0 text-zinc-400 dark:text-zinc-500">
-                              대상
-                            </span>
-                            <span className="font-semibold text-[13px]">
-                              <TargetCell raw={row.target} />
-                            </span>
-                          </div>
-                        )}
-                        {row.reclaimStatus && (
-                          <div className="flex items-baseline gap-2">
-                            <span className="w-11 shrink-0 text-zinc-400 dark:text-zinc-500">
-                              개간지
-                            </span>
-                            <LandStatus raw={row.reclaimStatus} inline />
-                          </div>
-                        )}
-                        {row.occupyStatus && (
-                          <div className="flex items-baseline gap-2">
-                            <span className="w-11 shrink-0 text-zinc-400 dark:text-zinc-500">
-                              점령지
-                            </span>
-                            <LandStatus raw={row.occupyStatus} inline />
-                          </div>
-                        )}
-                        {(hasUnitChange || row.chicken !== undefined) && (
-                          <div className="flex items-baseline gap-2">
-                            <span className="w-11 shrink-0 text-zinc-400 dark:text-zinc-500">
-                              부대
-                            </span>
-                            <span className="flex gap-1.5 flex-wrap">
-                              {row.units.map((unit, u) => {
-                                const has =
-                                  unit.lv !== undefined || unit.hp !== undefined;
-                                if (!has) return null;
-                                return (
-                                  <span
-                                    key={u}
-                                    className="inline-flex items-center gap-1 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 px-1.5 py-0.5"
-                                  >
-                                    <span
-                                      className={`text-[10px] font-semibold ${
-                                        UNIT_TAG_STYLE[unitLabels[u]] ??
-                                        "text-zinc-500 dark:text-zinc-400"
-                                      }`}
-                                    >
-                                      {unitLabels[u]}
-                                    </span>
-                                    <UnitCell unit={unit} decimals={levelDecimals} />
-                                  </span>
-                                );
-                              })}
-                              {row.chicken !== undefined && (
-                                <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 font-mono">
-                                  🍗 {fmtChicken(row.chicken)}
-                                </span>
-                              )}
-                            </span>
-                          </div>
-                        )}
-                        {row.tip && (
-                          <div className="flex items-baseline gap-2 pt-0.5">
-                            <span className="w-11 shrink-0 text-zinc-400 dark:text-zinc-500">
-                              팁
-                            </span>
-                            <span className="text-sky-700 dark:text-sky-400 leading-snug">
-                              {row.tip}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          <TrackingCards
+            data={data}
+            completed={completed}
+            toggle={toggle}
+            unitLabels={unitLabels}
+            levelDecimals={levelDecimals}
+          />
         </div>
 
         {/* 부록 A: 누적 경험치선 (접이식) */}
