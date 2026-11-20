@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { hasScoutAccess } from '@/lib/scout-auth';
 import { scoutRepository } from '@/lib/repositories';
 import type { ScoutVerdict } from '@/lib/repositories';
 
@@ -7,9 +6,6 @@ const VALID_VERDICTS: ScoutVerdict[] = ['카운터', '미러', '비등', '회피
 
 // 덱 생성 또는 재사용 (이름/구성 동일 시 기존 반환)
 export async function POST(request: NextRequest) {
-  if (!hasScoutAccess(request)) {
-    return NextResponse.json({ error: '접근 권한이 없습니다.' }, { status: 401 });
-  }
   try {
     const body = await request.json();
     const name = typeof body?.name === 'string' ? body.name.trim() : '';

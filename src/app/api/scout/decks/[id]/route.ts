@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { hasScoutAccess } from '@/lib/scout-auth';
 import { scoutRepository } from '@/lib/repositories';
 import type { ScoutVerdict } from '@/lib/repositories';
 
@@ -10,9 +9,6 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!hasScoutAccess(request)) {
-    return NextResponse.json({ error: '접근 권한이 없습니다.' }, { status: 401 });
-  }
   try {
     const { id } = await params;
     const body = await request.json();
@@ -38,9 +34,6 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!hasScoutAccess(request)) {
-    return NextResponse.json({ error: '접근 권한이 없습니다.' }, { status: 401 });
-  }
   try {
     const { id } = await params;
     await scoutRepository.deleteDeck(id);

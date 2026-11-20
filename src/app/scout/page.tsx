@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ScoutGate } from "@/components/scout/ScoutGate";
 import { MyDeckSettingsPanel } from "@/components/scout/MyDeckSettingsPanel";
 import { ScoutSearch } from "@/components/scout/ScoutSearch";
 import { GeneralFilter } from "@/components/scout/GeneralFilter";
@@ -19,10 +18,9 @@ type EditorState =
   | { mode: "edit"; player: EnemyPlayer };
 
 export default function ScoutPage() {
-  const [authorized, setAuthorized] = useState<boolean | null>(null);
   const { user } = useAuth();
   const { settings, hydrated, setArmy } = useMyDeck(user?.id ?? null);
-  const scout = useScoutData(authorized === true);
+  const scout = useScoutData(true);
   const [editor, setEditor] = useState<EditorState>({ mode: "closed" });
   const editorRef = useRef<HTMLDivElement | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,17 +43,6 @@ export default function ScoutPage() {
     });
   }
 
-  useEffect(() => {
-    let active = true;
-    fetch("/api/scout/gate")
-      .then((r) => r.json())
-      .then((j) => active && setAuthorized(Boolean(j.authorized)))
-      .catch(() => active && setAuthorized(false));
-    return () => {
-      active = false;
-    };
-  }, []);
-
   async function handleSave(input: NewPlayerInput, id?: string) {
     let ok: unknown;
     if (id) {
@@ -65,18 +52,6 @@ export default function ScoutPage() {
     }
     if (ok) setEditor({ mode: "closed" });
     return ok;
-  }
-
-  if (authorized === null) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-12 text-center text-sm text-zinc-400">
-        불러오는 중...
-      </div>
-    );
-  }
-
-  if (!authorized) {
-    return <ScoutGate onSuccess={() => setAuthorized(true)} />;
   }
 
   return (

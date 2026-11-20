@@ -71,7 +71,7 @@
 
 ## 스크립트 동작 (`tools/scout-push.mjs`)
 
-- 인증: `.env` 의 `SCOUT_PASSCODE` + `JWT_SECRET` 으로 `scout_pass` 쿠키(HMAC-SHA256)를 계산 (서버 `src/lib/scout-auth.ts` 와 동일 규칙)
+- 인증: 없음. 정찰 API(`/api/scout/*`)는 패스코드 없이 호출한다 (2026-11 패스코드 제거)
 - `SCOUT_BASE_URL` 환경변수로 대상 URL 지정 가능(기본 `https://cheonha.samgukji.top`)
 - 절차: `GET /api/scout/data`(현재 상태) → 덱 dedup(구성 기준, 있으면 id 재사용, 없으면 `POST /api/scout/decks`) → 플레이어 병합(같은 이름 있으면 `PATCH`, 없으면 `POST`) → 재조회로 `badRefs` 검증
 - `--dry-run` 은 쓰기(POST/PATCH) 없이 계획만 출력. `--stdin` 으로 payload를 표준입력 전달 가능

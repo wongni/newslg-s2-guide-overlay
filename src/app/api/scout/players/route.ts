@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { hasScoutAccess } from '@/lib/scout-auth';
 import { scoutRepository } from '@/lib/repositories';
 import { ARMY_COUNT } from '@/data/enemy-decks';
 import type {
@@ -35,9 +34,6 @@ export function sanitizeArmies(raw: unknown): EnemyArmy[] {
 }
 
 export async function POST(request: NextRequest) {
-  if (!hasScoutAccess(request)) {
-    return NextResponse.json({ error: '접근 권한이 없습니다.' }, { status: 401 });
-  }
   try {
     const body = await request.json();
     const name = typeof body?.name === 'string' ? body.name.trim() : '';
